@@ -1,0 +1,1036 @@
+import { useState, useEffect } from "react";
+import {
+BookOpen,
+CheckCircle,
+Clock,
+RotateCcw,
+XCircle,
+AlertCircle,
+Award,
+ArrowRight,
+Save,
+} from "lucide-react";
+
+import examData from "./Database/question";
+// Sample data structure similar to the provided JSON
+
+export default function QuizApp() {
+const [quizStarted, setQuizStarted] = useState(false);
+const [questionCount, setQuestionCount] = useState(5);
+const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+const [selectedQuestions, setSelectedQuestions] = useState([]);
+const [selectedAnswer, setSelectedAnswer] = useState(null);
+const [answerSubmitted, setAnswerSubmitted] = useState(false);
+const [score, setScore] = useState(0);
+const [quizCompleted, setQuizCompleted] = useState(false);
+const [timer, setTimer] = useState(0);
+const [timerActive, setTimerActive] = useState(false);
+const [results, setResults] = useState([]);
+
+// Initialize or reset quiz
+const startQuiz = () => {
+// Randomly select questions based on questionCount
+const shuffled = [...examData.multiple_choice_questions].sort(
+() => 0.5 - Math.random()
+);
+const selected = shuffled.slice(0, questionCount);
+
+    setSelectedQuestions(selected);
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setQuizStarted(true);
+    setQuizCompleted(false);
+    setAnswerSubmitted(false);
+    setSelectedAnswer(null);
+    setTimer(0);
+    setTimerActive(true);
+    setResults([]);
+
+};
+
+// Handle timer
+useEffect(() => {
+let interval;
+if (timerActive && quizStarted && !quizCompleted) {
+interval = setInterval(() => {
+setTimer((prevTime) => prevTime + 1);
+}, 1000);
+}
+
+    return () => clearInterval(interval);
+
+}, [timerActive, quizStarted, quizCompleted]);
+
+// Format time for display
+const formatTime = (seconds) => {
+const mins = Math.floor(seconds / 60);
+const secs = seconds % 60;
+return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+};
+
+// Handle answer selection
+const handleAnswerSelect = (option) => {
+if (!answerSubmitted) {
+setSelectedAnswer(option);
+}
+};
+
+// Submit answer and check if correct
+const submitAnswer = () => {
+if (selectedAnswer) {
+const currentQuestion = selectedQuestions[currentQuestionIndex];
+const isCorrect = selectedAnswer === currentQuestion.correct_answer;
+
+      if (isCorrect) {
+        setScore(score + 1);
+      }
+
+      // Save result for this question
+      setResults([
+        ...results,
+        {
+          questionNumber: currentQuestion.question_number,
+          isCorrect,
+          selectedAnswer,
+          correctAnswer: currentQuestion.correct_answer,
+        },
+      ]);
+
+      setAnswerSubmitted(true);
+    }
+
+};
+
+// Move to next question or complete quiz
+const handleNextQuestion = () => {
+if (currentQuestionIndex < selectedQuestions.length - 1) {
+setCurrentQuestionIndex(currentQuestionIndex + 1);
+setSelectedAnswer(null);
+setAnswerSubmitted(false);
+} else {
+setQuizCompleted(true);
+setTimerActive(false);
+}
+};
+
+// Restart the quiz
+const restartQuiz = () => {
+setQuizStarted(false);
+};
+
+// Current question being displayed
+const currentQuestion = selectedQuestions[currentQuestionIndex];
+
+return (
+<div className="bg-gray-50 min-h-screen py-8">
+<div className="max-w-4xl mx-auto px-4">
+<header className="text-center mb-8">
+<h1 className="text-2xl font-bold text-green-800 mb-2">
+{examData.exam_details.course_name}
+</h1>
+<p className="text-gray-600">{examData.exam_details.university}</p>
+<p className="text-gray-600">
+{examData.exam_details.course_code} •{" "}
+{examData.exam_details.academic_year}
+</p>
+</header>
+
+        {!quizStarted ? (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <BookOpen className="mr-2 text-green-700" size={20} />
+              Practice Quiz Configuration
+            </h2>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">
+                Number of Questions:
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {[5, 10, 15, 20, examData.multiple_choice_questions.length].map(
+                  (num) => (
+                    <button
+                      key={num}
+                      className={`px-4 py-2 rounded ${
+                        questionCount === num
+                          ? "bg-green-600 text-white"
+                          : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                      }`}
+                      onClick={() => setQuestionCount(num)}
+                    >
+                      {num === examData.multiple_choice_questions.length
+                        ? "All"
+                        : num}
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+
+            <button
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-md transition flex items-center justify-center"
+              onClick={startQuiz}
+            >
+              <BookOpen className="mr-2" size={18} />
+              Start Practice Quiz
+            </button>
+          </div>
+        ) : quizCompleted ? (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                <Award className="text-green-600" size={32} />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Quiz Completed!</h2>
+              <p className="text-gray-600 mb-1">
+                Time Taken: {formatTime(timer)}
+              </p>
+              <p className="text-xl font-semibold">
+                Score: {score}/{selectedQuestions.length} (
+                {Math.round((score / selectedQuestions.length) * 100)}%)
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="font-semibold text-lg mb-3 border-b pb-2">
+                Question Summary
+              </h3>
+              <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                {results.map((result, index) => (
+                  <div
+                    key={index}
+                    className={`p-3 rounded-md flex items-center ${
+                      result.isCorrect
+                        ? "bg-green-50 border-l-4 border-green-500"
+                        : "bg-red-50 border-l-4 border-red-500"
+                    }`}
+                  >
+                    <div className="mr-3">
+                      {result.isCorrect ? (
+                        <CheckCircle className="text-green-500" size={20} />
+                      ) : (
+                        <XCircle className="text-red-500" size={20} />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">
+                        Question {index + 1}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {result.isCorrect
+                          ? `Correct: ${result.correctAnswer}`
+                          : `Your answer: ${result.selectedAnswer} | Correct: ${result.correctAnswer}`}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-md transition flex items-center justify-center"
+                onClick={restartQuiz}
+              >
+                <RotateCcw className="mr-2" size={18} />
+                Practice Again
+              </button>
+              <button
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md transition flex items-center justify-center"
+                onClick={() => {
+                  // Review functionality would be implemented here
+                  alert("Review feature would be implemented here");
+                }}
+              >
+                <BookOpen className="mr-2" size={18} />
+                Review All Questions
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center text-gray-600">
+                <BookOpen className="mr-1" size={16} />
+                <span>
+                  Question {currentQuestionIndex + 1} of{" "}
+                  {selectedQuestions.length}
+                </span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <Clock className="mr-1" size={16} />
+                <span>{formatTime(timer)}</span>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4">
+                {currentQuestion.question_text}
+              </h3>
+
+              <div className="space-y-3">
+                {Object.entries(currentQuestion.options).map(([key, value]) => (
+                  <button
+                    key={key}
+                    className={`w-full text-left p-3 rounded-md border transition flex items-center ${
+                      selectedAnswer === key
+                        ? answerSubmitted
+                          ? key === currentQuestion.correct_answer
+                            ? "bg-green-100 border-green-500"
+                            : "bg-red-100 border-red-500"
+                          : "bg-blue-100 border-blue-500"
+                        : answerSubmitted &&
+                          key === currentQuestion.correct_answer
+                        ? "bg-green-100 border-green-500"
+                        : "bg-white border-gray-300 hover:bg-gray-50"
+                    }`}
+                    onClick={() => handleAnswerSelect(key)}
+                    disabled={answerSubmitted}
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full mr-3">
+                      {key}
+                    </div>
+                    <span>{value}</span>
+                    {answerSubmitted &&
+                      key === currentQuestion.correct_answer && (
+                        <CheckCircle
+                          className="ml-auto text-green-600"
+                          size={20}
+                        />
+                      )}
+                    {answerSubmitted &&
+                      selectedAnswer === key &&
+                      key !== currentQuestion.correct_answer && (
+                        <XCircle className="ml-auto text-red-600" size={20} />
+                      )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {answerSubmitted && (
+              <div
+                className={`mb-6 p-4 rounded-md ${
+                  selectedAnswer === currentQuestion.correct_answer
+                    ? "bg-green-50 border-l-4 border-green-500"
+                    : "bg-red-50 border-l-4 border-red-500"
+                }`}
+              >
+                <div className="flex items-start">
+                  <div className="mr-3 mt-1">
+                    {selectedAnswer === currentQuestion.correct_answer ? (
+                      <CheckCircle className="text-green-500" size={20} />
+                    ) : (
+                      <AlertCircle className="text-red-500" size={20} />
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="font-medium">
+                      {selectedAnswer === currentQuestion.correct_answer
+                        ? "Correct!"
+                        : "Incorrect"}
+                    </h4>
+                    <p className="text-gray-700 mt-1">
+                      {currentQuestion.explanation}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-between">
+              {!answerSubmitted ? (
+                <button
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={submitAnswer}
+                  disabled={!selectedAnswer}
+                >
+                  Submit Answer
+                </button>
+              ) : (
+                <button
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition flex items-center"
+                  onClick={handleNextQuestion}
+                >
+                  {currentQuestionIndex < selectedQuestions.length - 1 ? (
+                    <>
+                      Next Question
+                      <ArrowRight className="ml-2" size={18} />
+                    </>
+                  ) : (
+                    <>
+                      Complete Quiz
+                      <Save className="ml-2" size={18} />
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+
+);
+}
+import { useState, useEffect } from "react";
+import {
+BookOpen,
+CheckCircle,
+Clock,
+RotateCcw,
+XCircle,
+AlertCircle,
+Award,
+ArrowRight,
+Save,
+GraduationCap,
+ChevronLeft,
+Grid3x3,
+Target,
+} from "lucide-react";
+
+// Mock data structure - replace with your actual data
+const mockExamData = {
+100: {
+"CSC 101": {
+exam_details: {
+course_name: "Introduction to Computer Science",
+course_code: "CSC 101",
+university: "University of Technology",
+academic_year: "2023/2024",
+level: "100",
+},
+multiple_choice_questions: [
+{
+question_number: 1,
+question_text: "What does CPU stand for?",
+options: {
+A: "Central Processing Unit",
+B: "Computer Processing Unit",
+C: "Central Program Unit",
+D: "Computer Program Unit",
+},
+correct_answer: "A",
+explanation:
+"CPU stands for Central Processing Unit, which is the main component that executes instructions.",
+},
+{
+question_number: 2,
+question_text: "Which of the following is a programming language?",
+options: {
+A: "HTML",
+B: "Python",
+C: "CSS",
+D: "HTTP",
+},
+correct_answer: "B",
+explanation:
+"Python is a high-level programming language used for various applications.",
+},
+],
+},
+"MTH 101": {
+exam_details: {
+course_name: "Calculus I",
+course_code: "MTH 101",
+university: "University of Technology",
+academic_year: "2023/2024",
+level: "100",
+},
+multiple_choice_questions: [
+{
+question_number: 1,
+question_text: "What is the derivative of x²?",
+options: {
+A: "x",
+B: "2x",
+C: "x²",
+D: "2x²",
+},
+correct_answer: "B",
+explanation: "The derivative of x² is 2x using the power rule.",
+},
+],
+},
+},
+200: {
+"CSC 201": {
+exam_details: {
+course_name: "Data Structures",
+course_code: "CSC 201",
+university: "University of Technology",
+academic_year: "2023/2024",
+level: "200",
+},
+multiple_choice_questions: [
+{
+question_number: 1,
+question_text: "Which data structure follows LIFO principle?",
+options: {
+A: "Queue",
+B: "Stack",
+C: "Array",
+D: "Linked List",
+},
+correct_answer: "B",
+explanation: "Stack follows Last In First Out (LIFO) principle.",
+},
+],
+},
+},
+300: {
+"CSC 301": {
+exam_details: {
+course_name: "Software Engineering",
+course_code: "CSC 301",
+university: "University of Technology",
+academic_year: "2023/2024",
+level: "300",
+},
+multiple_choice_questions: [
+{
+question_number: 1,
+question_text: "Which is an Agile methodology?",
+options: {
+A: "Waterfall",
+B: "Spiral",
+C: "Scrum",
+D: "V-Model",
+},
+correct_answer: "C",
+explanation:
+"Scrum is a popular Agile framework for software development.",
+},
+],
+},
+},
+400: {
+"CSC 401": {
+exam_details: {
+course_name: "Artificial Intelligence",
+course_code: "CSC 401",
+university: "University of Technology",
+academic_year: "2023/2024",
+level: "400",
+},
+multiple_choice_questions: [
+{
+question_number: 1,
+question_text: "What is machine learning?",
+options: {
+A: "Programming computers manually",
+B: "Teaching computers to learn from data",
+C: "Building computer hardware",
+D: "Designing user interfaces",
+},
+correct_answer: "B",
+explanation:
+"Machine learning involves algorithms that learn patterns from data.",
+},
+],
+},
+},
+};
+
+export default function QuizApp() {
+// Navigation states
+const [currentView, setCurrentView] = useState("level-selection"); // level-selection, course-selection, quiz-config, quiz-active, quiz-complete
+const [selectedLevel, setSelectedLevel] = useState(null);
+const [selectedCourse, setSelectedCourse] = useState(null);
+const [currentExamData, setCurrentExamData] = useState(null);
+
+// Quiz states
+const [quizStarted, setQuizStarted] = useState(false);
+const [questionCount, setQuestionCount] = useState(5);
+const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+const [selectedQuestions, setSelectedQuestions] = useState([]);
+const [selectedAnswer, setSelectedAnswer] = useState(null);
+const [answerSubmitted, setAnswerSubmitted] = useState(false);
+const [score, setScore] = useState(0);
+const [quizCompleted, setQuizCompleted] = useState(false);
+const [timer, setTimer] = useState(0);
+const [timerActive, setTimerActive] = useState(false);
+const [results, setResults] = useState([]);
+
+// Handle level selection
+const handleLevelSelect = (level) => {
+setSelectedLevel(level);
+setCurrentView("course-selection");
+};
+
+// Handle course selection
+const handleCourseSelect = (courseCode) => {
+setSelectedCourse(courseCode);
+setCurrentExamData(mockExamData[selectedLevel][courseCode]);
+setCurrentView("quiz-config");
+};
+
+// Initialize or reset quiz
+const startQuiz = () => {
+if (!currentExamData?.multiple_choice_questions) return;
+
+    const shuffled = [...currentExamData.multiple_choice_questions].sort(
+      () => 0.5 - Math.random()
+    );
+    const selected = shuffled.slice(
+      0,
+      Math.min(questionCount, shuffled.length)
+    );
+
+    setSelectedQuestions(selected);
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setQuizStarted(true);
+    setQuizCompleted(false);
+    setAnswerSubmitted(false);
+    setSelectedAnswer(null);
+    setTimer(0);
+    setTimerActive(true);
+    setResults([]);
+    setCurrentView("quiz-active");
+
+};
+
+// Handle timer
+useEffect(() => {
+let interval;
+if (timerActive && quizStarted && !quizCompleted) {
+interval = setInterval(() => {
+setTimer((prevTime) => prevTime + 1);
+}, 1000);
+}
+return () => clearInterval(interval);
+}, [timerActive, quizStarted, quizCompleted]);
+
+// Format time for display
+const formatTime = (seconds) => {
+const mins = Math.floor(seconds / 60);
+const secs = seconds % 60;
+return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+};
+
+// Handle answer selection
+const handleAnswerSelect = (option) => {
+if (!answerSubmitted) {
+setSelectedAnswer(option);
+}
+};
+
+// Submit answer and check if correct
+const submitAnswer = () => {
+if (selectedAnswer) {
+const currentQuestion = selectedQuestions[currentQuestionIndex];
+const isCorrect = selectedAnswer === currentQuestion.correct_answer;
+
+      if (isCorrect) {
+        setScore(score + 1);
+      }
+
+      setResults([
+        ...results,
+        {
+          questionNumber: currentQuestion.question_number,
+          isCorrect,
+          selectedAnswer,
+          correctAnswer: currentQuestion.correct_answer,
+        },
+      ]);
+
+      setAnswerSubmitted(true);
+    }
+
+};
+
+// Move to next question or complete quiz
+const handleNextQuestion = () => {
+if (currentQuestionIndex < selectedQuestions.length - 1) {
+setCurrentQuestionIndex(currentQuestionIndex + 1);
+setSelectedAnswer(null);
+setAnswerSubmitted(false);
+} else {
+setQuizCompleted(true);
+setTimerActive(false);
+setCurrentView("quiz-complete");
+}
+};
+
+// Reset to level selection
+const resetToLevelSelection = () => {
+setCurrentView("level-selection");
+setSelectedLevel(null);
+setSelectedCourse(null);
+setCurrentExamData(null);
+setQuizStarted(false);
+setQuizCompleted(false);
+};
+
+// Go back to course selection
+const backToCourseSelection = () => {
+setCurrentView("course-selection");
+setSelectedCourse(null);
+setCurrentExamData(null);
+};
+
+// Get available levels
+const availableLevels = Object.keys(mockExamData);
+
+// Get available courses for selected level
+const availableCourses = selectedLevel
+? Object.keys(mockExamData[selectedLevel])
+: [];
+
+// Current question being displayed
+const currentQuestion = selectedQuestions[currentQuestionIndex];
+
+return (
+<div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8">
+<div className="max-w-4xl mx-auto px-4">
+{/_ Header _/}
+<header className="text-center mb-8">
+<div className="flex items-center justify-center mb-4">
+<GraduationCap className="text-indigo-600 mr-3" size={32} />
+<h1 className="text-3xl font-bold text-indigo-800">Prep Mate</h1>
+</div>
+<p className="text-gray-600">Practice exams for all levels</p>
+</header>
+
+        {/* Level Selection View */}
+        {currentView === "level-selection" && (
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-center mb-8 flex items-center justify-center">
+              <Target className="mr-3 text-indigo-600" size={24} />
+              Select Your Level
+            </h2>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {availableLevels.map((level) => (
+                <button
+                  key={level}
+                  className="group relative bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white p-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  onClick={() => handleLevelSelect(level)}
+                >
+                  <div className="text-center">
+                    <div className="text-3xl font-bold mb-2">L{level}</div>
+                    <div className="text-sm opacity-90">Level {level}</div>
+                  </div>
+                  <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300"></div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Course Selection View */}
+        {currentView === "course-selection" && (
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="flex items-center mb-6">
+              <button
+                onClick={() => setCurrentView("level-selection")}
+                className="mr-4 p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <h2 className="text-2xl font-bold flex items-center">
+                <BookOpen className="mr-3 text-indigo-600" size={24} />
+                Level {selectedLevel} Courses
+              </h2>
+            </div>
+
+            <div className="grid gap-4">
+              {availableCourses.map((courseCode) => {
+                const courseData = mockExamData[selectedLevel][courseCode];
+                return (
+                  <button
+                    key={courseCode}
+                    className="text-left p-6 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 border border-gray-200 hover:border-indigo-300 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-sm hover:shadow-md"
+                    onClick={() => handleCourseSelect(courseCode)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                          {courseData.exam_details.course_code}
+                        </h3>
+                        <p className="text-gray-600 mb-2">
+                          {courseData.exam_details.course_name}
+                        </p>
+                        <p className="text-sm text-indigo-600">
+                          {courseData.multiple_choice_questions.length}{" "}
+                          questions available
+                        </p>
+                      </div>
+                      <ArrowRight className="text-indigo-400" size={20} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Quiz Configuration View */}
+        {currentView === "quiz-config" && currentExamData && (
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="flex items-center mb-6">
+              <button
+                onClick={backToCourseSelection}
+                className="mr-4 p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <div>
+                <h2 className="text-2xl font-bold text-indigo-800">
+                  {currentExamData.exam_details.course_name}
+                </h2>
+                <p className="text-gray-600">
+                  {currentExamData.exam_details.course_code} • Level{" "}
+                  {currentExamData.exam_details.level}
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-gray-700 mb-3 font-medium">
+                Number of Questions:
+              </label>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  5,
+                  10,
+                  15,
+                  20,
+                  currentExamData.multiple_choice_questions.length,
+                ].map((num) => (
+                  <button
+                    key={num}
+                    className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                      questionCount === num
+                        ? "bg-indigo-600 text-white shadow-lg scale-105"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105"
+                    }`}
+                    onClick={() =>
+                      setQuestionCount(
+                        Math.min(
+                          num,
+                          currentExamData.multiple_choice_questions.length
+                        )
+                      )
+                    }
+                  >
+                    {num === currentExamData.multiple_choice_questions.length
+                      ? "All"
+                      : num}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg flex items-center justify-center"
+              onClick={startQuiz}
+            >
+              <BookOpen className="mr-2" size={18} />
+              Start Practice Quiz
+            </button>
+          </div>
+        )}
+
+        {/* Quiz Active View */}
+        {currentView === "quiz-active" && currentQuestion && (
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center text-gray-600">
+                <Grid3x3 className="mr-2" size={16} />
+                <span>
+                  Question {currentQuestionIndex + 1} of{" "}
+                  {selectedQuestions.length}
+                </span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <Clock className="mr-2" size={16} />
+                <span className="font-mono">{formatTime(timer)}</span>
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold mb-6 text-gray-800">
+                {currentQuestion.question_text}
+              </h3>
+
+              <div className="space-y-3">
+                {Object.entries(currentQuestion.options).map(([key, value]) => (
+                  <button
+                    key={key}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center ${
+                      selectedAnswer === key
+                        ? answerSubmitted
+                          ? key === currentQuestion.correct_answer
+                            ? "bg-green-50 border-green-400 shadow-md"
+                            : "bg-red-50 border-red-400 shadow-md"
+                          : "bg-indigo-50 border-indigo-400 shadow-md"
+                        : answerSubmitted &&
+                          key === currentQuestion.correct_answer
+                        ? "bg-green-50 border-green-400 shadow-md"
+                        : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm"
+                    }`}
+                    onClick={() => handleAnswerSelect(key)}
+                    disabled={answerSubmitted}
+                  >
+                    <div className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full mr-4 font-semibold">
+                      {key}
+                    </div>
+                    <span className="flex-1">{value}</span>
+                    {answerSubmitted &&
+                      key === currentQuestion.correct_answer && (
+                        <CheckCircle
+                          className="ml-auto text-green-600"
+                          size={24}
+                        />
+                      )}
+                    {answerSubmitted &&
+                      selectedAnswer === key &&
+                      key !== currentQuestion.correct_answer && (
+                        <XCircle className="ml-auto text-red-600" size={24} />
+                      )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {answerSubmitted && (
+              <div
+                className={`mb-6 p-6 rounded-xl ${
+                  selectedAnswer === currentQuestion.correct_answer
+                    ? "bg-green-50 border-l-4 border-green-500"
+                    : "bg-red-50 border-l-4 border-red-500"
+                }`}
+              >
+                <div className="flex items-start">
+                  <div className="mr-4 mt-1">
+                    {selectedAnswer === currentQuestion.correct_answer ? (
+                      <CheckCircle className="text-green-500" size={24} />
+                    ) : (
+                      <AlertCircle className="text-red-500" size={24} />
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg mb-2">
+                      {selectedAnswer === currentQuestion.correct_answer
+                        ? "Correct!"
+                        : "Incorrect"}
+                    </h4>
+                    <p className="text-gray-700">
+                      {currentQuestion.explanation}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-between">
+              {!answerSubmitted ? (
+                <button
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
+                  onClick={submitAnswer}
+                  disabled={!selectedAnswer}
+                >
+                  Submit Answer
+                </button>
+              ) : (
+                <button
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center"
+                  onClick={handleNextQuestion}
+                >
+                  {currentQuestionIndex < selectedQuestions.length - 1 ? (
+                    <>
+                      Next Question
+                      <ArrowRight className="ml-2" size={18} />
+                    </>
+                  ) : (
+                    <>
+                      Complete Quiz
+                      <Save className="ml-2" size={18} />
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Quiz Complete View */}
+        {currentView === "quiz-complete" && (
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-blue-500 rounded-full mb-6">
+                <Award className="text-white" size={40} />
+              </div>
+              <h2 className="text-3xl font-bold mb-4">Quiz Completed!</h2>
+              <div className="space-y-2">
+                <p className="text-gray-600 text-lg">
+                  Time Taken: {formatTime(timer)}
+                </p>
+                <p className="text-2xl font-bold">
+                  Score: {score}/{selectedQuestions.length} (
+                  {Math.round((score / selectedQuestions.length) * 100)}%)
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <h3 className="font-bold text-xl mb-4 border-b-2 border-gray-200 pb-2">
+                Question Summary
+              </h3>
+              <div className="space-y-3 max-h-64 overflow-y-auto">
+                {results.map((result, index) => (
+                  <div
+                    key={index}
+                    className={`p-4 rounded-lg flex items-center ${
+                      result.isCorrect
+                        ? "bg-green-50 border-l-4 border-green-500"
+                        : "bg-red-50 border-l-4 border-red-500"
+                    }`}
+                  >
+                    <div className="mr-4">
+                      {result.isCorrect ? (
+                        <CheckCircle className="text-green-500" size={24} />
+                      ) : (
+                        <XCircle className="text-red-500" size={24} />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">Question {index + 1}</p>
+                      <p className="text-sm text-gray-600">
+                        {result.isCorrect
+                          ? `Correct: ${result.correctAnswer}`
+                          : `Your answer: ${result.selectedAnswer} | Correct: ${result.correctAnswer}`}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-medium py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg flex items-center justify-center"
+                onClick={() => setCurrentView("quiz-config")}
+              >
+                <RotateCcw className="mr-2" size={18} />
+                Practice Again
+              </button>
+              <button
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg flex items-center justify-center"
+                onClick={resetToLevelSelection}
+              >
+                <GraduationCap className="mr-2" size={18} />
+                Choose Different Level
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+
+);
+}
