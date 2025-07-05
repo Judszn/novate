@@ -1,0 +1,589 @@
+const IntroManagement = {
+  exam_details: {
+    university: "Level 100 Semester 2",
+    course_code: "Introduction to Management",
+    course_name: "INTRODUCTION TO MANAGEMENT",
+  },
+  multiple_choice_questions: [
+    {
+      question_number: 1,
+      question_text:
+        "A principle in organizing in which management consciously attempts to spread authority to the lower levels of the organization is referred to as;",
+      options: {
+        A: "Delegation",
+        B: "Scaler chain",
+        C: "Centralization",
+        D: "Decentralization",
+      },
+      correct_answer: "D",
+      explanation:
+        "Decentralization is the management principle where authority is consciously spread to lower levels of the organization. This distributes decision-making power throughout the organization rather than concentrating it at the top, allowing for faster responses and greater employee empowerment.",
+    },
+    {
+      question_number: 2,
+      question_text:
+        "The organizing concept where superiors contact the subordinates and delegate responsibility and authority to make them work towards organizational goals is referred to as:",
+      options: {
+        A: "Person-to-person concept",
+        B: "Group concept",
+        C: "Herd concept",
+        D: "Delegation",
+      },
+      correct_answer: "D",
+      explanation:
+        "Delegation is the process by which superiors assign responsibility and authority to subordinates to accomplish specific tasks. It involves transferring decision-making authority while maintaining accountability for results.",
+    },
+    {
+      question_number: 3,
+      question_text:
+        "In what order do managers typically perform the managerial functions?",
+      options: {
+        A: "organizing, planning, controlling, leading",
+        B: "organizing, leading, planning, controlling",
+        C: "planning, organizing, leading, controlling",
+        D: "planning, organizing, controlling, leading",
+      },
+      correct_answer: "C",
+      explanation:
+        "The traditional sequence of managerial functions is Planning, Organizing, Leading, and Controlling (POLC). Planning comes first as it sets the foundation, followed by organizing resources, leading people, and controlling to ensure objectives are met.",
+    },
+    {
+      question_number: 4,
+      question_text:
+        "Which one of the following is not one of Drucker's five guiding principles of management?",
+      options: {
+        A: "Making people's strengths effective and their weaknesses irrelevant",
+        B: "Enhancing the ability of people to contribute",
+        C: "To operate the organization's status system",
+        D: "Integrating people in a common venture by thinking through, setting and exemplifying the organizational objectives, values and goals",
+      },
+      correct_answer: "C",
+      explanation:
+        "Operating the organization's status system is not one of Drucker's five guiding principles. Drucker focused on making people productive, enhancing contributions, and integrating people toward common goals rather than maintaining hierarchical status systems.",
+    },
+    {
+      question_number: 5,
+      question_text: "What are the three interpersonal roles of managers?",
+      options: {
+        A: "Figurehead, leader and liaison",
+        B: "Spokesperson, leader, coordinator",
+        C: "Director, coordinator, disseminator",
+        D: "Communicator, organizer, spokesperson",
+      },
+      correct_answer: "A",
+      explanation:
+        "According to Henry Mintzberg's managerial roles theory, the three interpersonal roles are Figurehead (ceremonial duties), Leader (motivating and directing), and Liaison (maintaining networks and relationships).",
+    },
+    {
+      question_number: 6,
+      question_text:
+        "At what level of an organization does a corporate manager operate?",
+      options: {
+        A: "Functional",
+        B: "Operational",
+        C: "Middle level",
+        D: "Top level",
+      },
+      correct_answer: "D",
+      explanation:
+        "Corporate managers operate at the top level of organizational hierarchy. They are responsible for overall organizational strategy, policy-making, and long-term planning across all business units.",
+    },
+    {
+      question_number: 7,
+      question_text:
+        "What is the guiding principle behind New Public Management?",
+      options: {
+        A: "Profit maximization",
+        B: "Introducing private sector business principles into the public sector",
+        C: "Replacing public management with private sector management",
+        D: "Restructuring public organizations",
+      },
+      correct_answer: "B",
+      explanation:
+        "New Public Management (NPM) is based on introducing private sector business principles and practices into public sector organizations to improve efficiency, effectiveness, and accountability while maintaining public service objectives.",
+    },
+    {
+      question_number: 8,
+      question_text: "Which one is not a recognized key skill of management?",
+      options: {
+        A: "Conceptual skills",
+        B: "Human skills",
+        C: "Technical skills",
+        D: "Writing skills",
+      },
+      correct_answer: "D",
+      explanation:
+        "The three recognized key management skills according to Robert Katz are Technical skills (job-specific knowledge), Human skills (interpersonal abilities), and Conceptual skills (strategic thinking). Writing skills, while important, are not one of the three primary management skill categories.",
+    },
+    {
+      question_number: 9,
+      question_text:
+        "Which of these is not part of the recognized challenges for modern managers?",
+      options: {
+        A: "Micro-managing the workforce",
+        B: "Managing communications",
+        C: "Managing change",
+        D: "Managing the learning organization",
+      },
+      correct_answer: "A",
+      explanation:
+        "Micro-managing is not a recognized challenge but rather a poor management practice. Modern management challenges include managing communications, change, and learning organizations, which require empowerment rather than micro-management.",
+    },
+    {
+      question_number: 10,
+      question_text:
+        "What characteristic is not a key feature of the 'open systems' model of management?",
+      options: {
+        A: "Morale",
+        B: "Innovation",
+        C: "Growth resource",
+        D: "Adaptation",
+      },
+      correct_answer: "A",
+      explanation:
+        "The open systems model emphasizes interaction with the environment through innovation, growth resources, and adaptation. Morale is more associated with human relations approaches rather than the open systems model's focus on environmental interaction.",
+    },
+    {
+      question_number: 11,
+      question_text:
+        "Which one of these characteristics is most commonly associated with the 'rational goal' model of management?",
+      options: {
+        A: "Worker welfare",
+        B: "Health and safety",
+        C: "Interpersonal relationships",
+        D: "Productivity",
+      },
+      correct_answer: "D",
+      explanation:
+        "The rational goal model focuses on productivity, efficiency, and achievement of specific objectives. It emphasizes measurable outputs and goal attainment rather than worker welfare or interpersonal relationships.",
+    },
+    {
+      question_number: 12,
+      question_text: "What is the guiding principle of scientific management?",
+      options: {
+        A: "Experimentation",
+        B: "Fluid working relationships",
+        C: "Freedom of association",
+        D: "One best way to do a job",
+      },
+      correct_answer: "D",
+      explanation:
+        "Scientific management, developed by Frederick Taylor, is based on the principle that there is 'one best way' to perform any job. This involves scientific study of work methods to find the most efficient approach.",
+    },
+    {
+      question_number: 13,
+      question_text: "What is Frank Gilbreth's work most noted for?",
+      options: {
+        A: "Working conditions",
+        B: "Time and motion studies",
+        C: "Work psychology",
+        D: "Work as a social setting",
+      },
+      correct_answer: "B",
+      explanation:
+        "Frank Gilbreth, along with his wife Lillian, is most famous for developing time and motion studies. They analyzed work motions to eliminate waste and improve efficiency, contributing significantly to scientific management.",
+    },
+    {
+      question_number: 14,
+      question_text:
+        "Which of the following is not a characteristic of a bureaucratic organization?",
+      options: {
+        A: "Authority",
+        B: "Regulations",
+        C: "Command structure",
+        D: "Change",
+      },
+      correct_answer: "D",
+      explanation:
+        "Bureaucratic organizations, as described by Max Weber, are characterized by formal authority, regulations, and clear command structures. They are typically resistant to change and favor stability and predictability.",
+    },
+    {
+      question_number: 15,
+      question_text:
+        "Which of the following features does not form one of Fayol's 14 principles of management?",
+      options: {
+        A: "Esprit de corps",
+        B: "Initiative",
+        C: "Order",
+        D: "Individualism",
+      },
+      correct_answer: "D",
+      explanation:
+        "Individualism is not one of Fayol's 14 principles. Fayol emphasized unity and teamwork through principles like Esprit de corps (team spirit), while individualism would contradict the collaborative approach he advocated.",
+    },
+    {
+      question_number: 16,
+      question_text:
+        "The Hawthorn Studies are most associated with which of the following writers?",
+      options: {
+        A: "Mary Parker Follett",
+        B: "Elton Mayo",
+        C: "Lillian Gilbreth",
+        D: "Frederick Taylor",
+      },
+      correct_answer: "B",
+      explanation:
+        "The Hawthorne Studies, conducted at the Western Electric Company, are most associated with Elton Mayo. These studies revealed the importance of social factors and human relations in workplace productivity.",
+    },
+    {
+      question_number: 17,
+      question_text: "Planning is done so that organization can survive in a",
+      options: {
+        A: "Global economy",
+        B: "Political crisis",
+        C: "Changing environment",
+        D: "Technological world",
+      },
+      correct_answer: "C",
+      explanation:
+        "Planning is primarily done to help organizations survive and thrive in a changing environment. While global economy, political crises, and technology are specific aspects, the overarching purpose is to adapt to all forms of environmental change.",
+    },
+    {
+      question_number: 18,
+      question_text: "Which of the following will lead to a plan failure",
+      options: {
+        A: "Short-term objectives",
+        B: "Long-term objectives",
+        C: "Incorporating flexibility",
+        D: "Multiple goals",
+      },
+      correct_answer: "D",
+      explanation:
+        "Multiple goals can lead to plan failure when they are conflicting, unclear, or too numerous to manage effectively. This can cause confusion, resource dilution, and lack of focus, making it difficult to achieve any objectives successfully.",
+    },
+    {
+      question_number: 19,
+      question_text:
+        "Planning is often called the primary management function because it",
+      options: {
+        A: "Offers some basis for future decision making",
+        B: "Creates the vision for the organizational members to work toward",
+        C: "Establishes the basis for all the other functions",
+        D: "Sets the tone for the organizational culture",
+      },
+      correct_answer: "C",
+      explanation:
+        "Planning is called the primary management function because it establishes the foundation for all other management functions (organizing, leading, and controlling). Without proper planning, other functions cannot be effectively executed.",
+    },
+    {
+      question_number: 20,
+      question_text:
+        "Planning is done so that an organization can survive in a",
+      options: {
+        A: "Global economy",
+        B: "Political crisis",
+        C: "Changing environment",
+        D: "Technological world",
+      },
+      correct_answer: "C",
+      explanation:
+        "Planning enables organizations to anticipate, prepare for, and adapt to changing environments. This includes economic, political, technological, and social changes that could impact organizational success.",
+    },
+  ],
+  multiple_choice_questions: [
+    {
+      question_number: 21,
+      question_text:
+        "_____ is that part of management which is concerned with the installation and carrying out of the procedures by which the programme is laid down and communicated and the progress of activities is regulated and checked against plans.",
+      options: {
+        A: "Planning",
+        B: "Organizing",
+        C: "Controlling",
+        D: "Leading",
+      },
+      correct_answer: "C",
+      explanation:
+        "Controlling is the management function that involves monitoring performance, comparing it with planned objectives, and taking corrective action when necessary. It ensures that activities are carried out according to plans and organizational goals are achieved.",
+    },
+    {
+      question_number: 22,
+      question_text:
+        "_____ is the attainment of organizational goals through planning, organizing, leading and controlling. Managers have to get things done through people and resources and provide leadership and direction.",
+      options: {
+        A: "Leadership",
+        B: "Management",
+        C: "Administration",
+        D: "Supervision",
+      },
+      correct_answer: "B",
+      explanation:
+        "Management is defined as the process of achieving organizational objectives through the coordination of human and material resources using the functions of planning, organizing, leading, and controlling.",
+    },
+    {
+      question_number: 23,
+      question_text:
+        "All the following statements and phrases attempt to explain the managerial organizing function (organization). Pick the odd one out.",
+      options: {
+        A: "Organization is a system of well-defined tasks and duties assigned to people",
+        B: "It is a function in itself and also helps in performing other managerial functions",
+        C: "It is a static process which directs how activities and procedures ought to be followed",
+        D: "Delegation of authority, responsibility and accountability",
+      },
+      correct_answer: "C",
+      explanation:
+        "Organizing is a dynamic, not static process. It involves continuous adjustment and adaptation of structures, relationships, and processes to meet changing organizational needs and environmental conditions.",
+    },
+    {
+      question_number: 24,
+      question_text:
+        "_____ is a set of relationships that define vertical and horizontal relationship amongst people who are assigned various tasks and duties.",
+      options: {
+        A: "Planning",
+        B: "Controlling",
+        C: "Organizing",
+        D: "Forecasting",
+      },
+      correct_answer: "C",
+      explanation:
+        "Organizing creates the formal structure of relationships, defining how people relate to each other both vertically (hierarchical relationships) and horizontally (lateral relationships) within the organization.",
+    },
+    {
+      question_number: 25,
+      question_text:
+        "As what are key factors that reflect the situation of an organization referred to?",
+      options: {
+        A: "Administrations",
+        B: "Processes",
+        C: "Activities",
+        D: "Contingencies",
+      },
+      correct_answer: "D",
+      explanation:
+        "Contingencies are the situational factors that influence organizational design and management approaches. These include environmental uncertainty, technology, size, and other contextual variables that affect organizational effectiveness.",
+    },
+    {
+      question_number: 26,
+      question_text: "Another name for contingency planning is",
+      options: {
+        A: "Synergy planning",
+        B: "Ad hoc planning",
+        C: "Business level planning",
+        D: "Scenario planning",
+      },
+      correct_answer: "D",
+      explanation:
+        "Scenario planning is another term for contingency planning. It involves developing multiple possible future scenarios and preparing plans for each, allowing organizations to respond effectively to various potential situations.",
+    },
+    {
+      question_number: 27,
+      question_text: "What is a definition of an objective?",
+      options: {
+        A: "A defined specified outcome to be achieved in the long-term",
+        B: "A clear set of goals to be attained given a set number of resources",
+        C: "A clearly defined and measurable outcome to be achieved over a specified timeframe",
+        D: "A set standard of performance agreed by workers and managers",
+      },
+      correct_answer: "C",
+      explanation:
+        "An objective is a clearly defined and measurable outcome that an organization seeks to achieve within a specified timeframe. It must be specific, measurable, and time-bound to be effective.",
+    },
+    {
+      question_number: 28,
+      question_text: "What does the acronym SMART stand for?",
+      options: {
+        A: "Suitable, measurable, actionable, rewarded and timely",
+        B: "Specific, measurable, actionable, resourced and timely",
+        C: "Standardized, measurable, achievable, rewarded, and timely",
+        D: "Specific, measurable, achievable, rewarded and timely",
+      },
+      correct_answer: "D",
+      explanation:
+        "SMART stands for Specific, Measurable, Achievable, Rewarded (or Relevant), and Timely. This framework helps ensure that objectives are well-defined and attainable.",
+    },
+    {
+      question_number: 29,
+      question_text: "Which of the following is not a recognized type of plan?",
+      options: {
+        A: "Business",
+        B: "Succession",
+        C: "Ad hoc",
+        D: "Financial",
+      },
+      correct_answer: "C",
+      explanation:
+        "Ad hoc is not a recognized type of plan but rather describes something done for a specific purpose without prior planning. The other options (Business, Succession, Financial) are all recognized types of organizational plans.",
+    },
+    {
+      question_number: 30,
+      question_text: "To what time-frame do strategic plans relate?",
+      options: {
+        A: "Long-term",
+        B: "Medium-term",
+        C: "Short-term",
+        D: "Unspecified time it takes to achieve an aim",
+      },
+      correct_answer: "A",
+      explanation:
+        "Strategic plans are long-term plans, typically covering 3-5 years or more. They focus on the overall direction and major goals of the organization, requiring extended timeframes for implementation and achievement.",
+    },
+    {
+      question_number: 31,
+      question_text:
+        "Which is not a recognized form of business continuity planning?",
+      options: {
+        A: "Contingency planning",
+        B: "Scenario planning",
+        C: "Financial planning",
+        D: "Building planning",
+      },
+      correct_answer: "D",
+      explanation:
+        "Building planning is not a recognized form of business continuity planning. Business continuity planning includes contingency planning, scenario planning, and financial planning to ensure organizational survival during disruptions.",
+    },
+    {
+      question_number: 32,
+      question_text: "What is a succession plan?",
+      options: {
+        A: "Dismissing an employee for a more favourable employee",
+        B: "A formal process of planning to fill a role that will become vacant",
+        C: "A vote of no confidence in a board member",
+        D: "The formal process of acquiring a new staff member",
+      },
+      correct_answer: "B",
+      explanation:
+        "A succession plan is a formal process of identifying and preparing employees to fill key positions when they become vacant due to retirement, promotion, or departure. It ensures continuity of leadership and operations.",
+    },
+    {
+      question_number: 33,
+      question_text:
+        "Which of the following is not a key management skill in planning?",
+      options: {
+        A: "Conceptual skills",
+        B: "Analytical skills",
+        C: "IT and computing skills",
+        D: "Communication skills",
+      },
+      correct_answer: "C",
+      explanation:
+        "While IT and computing skills are useful, they are not considered a key management skill in planning. The essential planning skills are conceptual (strategic thinking), analytical (problem-solving), and communication (sharing plans effectively).",
+    },
+    {
+      question_number: 34,
+      question_text:
+        "The Hawthorn study is associated with which of the following writers?",
+      options: {
+        A: "Mary Parker Follett",
+        B: "Elton Mayo",
+        C: "Lillian Gilbreth",
+        D: "Frederick Taylor",
+      },
+      correct_answer: "B",
+      explanation:
+        "The Hawthorne Studies are associated with Elton Mayo. These studies at the Western Electric Company revealed the importance of social and psychological factors in workplace productivity, leading to the human relations movement.",
+    },
+    {
+      question_number: 35,
+      question_text:
+        "In order of ascending what is the first need of an employee according to Maslow's viewpoint?",
+      options: {
+        A: "Safety needs",
+        B: "Esteem needs",
+        C: "Basic needs",
+        D: "Physical needs",
+      },
+      correct_answer: "D",
+      explanation:
+        "According to Maslow's hierarchy of needs, physiological (physical) needs are the first and most basic level. These include food, water, shelter, and other biological necessities that must be satisfied before higher-level needs become motivating factors.",
+    },
+    {
+      question_number: 36,
+      question_text:
+        "Ali is a manager in a multinational organization. He believes that the employees of the company are lazy and do not have much ambition. Ali's viewpoint can be attributed to which of the following theory.",
+      options: {
+        A: "Theory Y",
+        B: "Contingency theory",
+        C: "System theory",
+        D: "Theory X",
+      },
+      correct_answer: "D",
+      explanation:
+        "Theory X, developed by Douglas McGregor, assumes that employees are inherently lazy, dislike work, lack ambition, and need to be closely supervised and controlled. This contrasts with Theory Y, which assumes employees are self-motivated and responsible.",
+    },
+    {
+      question_number: 37,
+      question_text:
+        "Planning is often called the primary management function because it",
+      options: {
+        A: "Offers some basis for future decision making",
+        B: "Creates the vision for the organizational members to work toward",
+        C: "Establishes the basis for all the other functions",
+        D: "Sets the tone for the organizational culture",
+      },
+      correct_answer: "C",
+      explanation:
+        "Planning is the primary management function because it establishes the foundation for all other management functions. Without proper planning, organizing, leading, and controlling cannot be effectively executed.",
+    },
+    {
+      question_number: 38,
+      question_text:
+        "Economic constraints, Integration and market research describe a",
+      options: {
+        A: "Planning process",
+        B: "Good plan features",
+        C: "Planning objectives",
+        D: "Planning orientation",
+      },
+      correct_answer: "A",
+      explanation:
+        "Economic constraints, integration, and market research are components of the planning process. They represent the analytical and environmental scanning activities that inform effective planning decisions.",
+    },
+    {
+      question_number: 39,
+      question_text:
+        "Which of the following scholars is referred to as the father of scientific management theory?",
+      options: {
+        A: "F. W. Taylor",
+        B: "Max Weber",
+        C: "Abraham Maslow",
+        D: "Henry Fayol",
+      },
+      correct_answer: "A",
+      explanation:
+        "Frederick Winslow Taylor is known as the father of scientific management theory. He developed principles for improving industrial efficiency through scientific study of work methods, time and motion studies, and standardization.",
+    },
+    {
+      question_number: 40,
+      question_text:
+        "The dynamics in the organizational ecology demands that managers adopt a philosophy of management which could be summarized as 'it all depends'. Identify the appropriate viewpoint.",
+      options: {
+        A: "Classical approach",
+        B: "Contingency approach",
+        C: "Human relations approach",
+        D: "Systems approach",
+      },
+      correct_answer: "B",
+      explanation:
+        "The contingency approach is based on the philosophy that 'it all depends' on the situation. This approach recognizes that there is no single best way to manage and that management practices should be adapted to fit specific situational factors.",
+    },
+    {
+      question_number: 41,
+      question_text:
+        "Which of the following ideology best describes the classical writer position?",
+      options: {
+        A: "It all depends on the freedom of association",
+        B: "No best way",
+        C: "One best way to do a job",
+        D: "Division of labour",
+      },
+      correct_answer: "C",
+      explanation:
+        "The classical management approach, including scientific management and administrative theory, was based on the belief that there is 'one best way' to perform any job or manage any situation. This contrasts with later approaches that emphasized situational factors.",
+    },
+    {
+      question_number: 42,
+      question_text:
+        "Which one of the following places the subject matter into context according to McGregor theory X?",
+      options: {
+        A: "Workers enjoy responsibility",
+        B: "Workers view physical and mental effort as a natural part of work",
+        C: "Workers like to show initiative",
+        D: "Workers like to be directed",
+      },
+      correct_answer: "D",
+      explanation:
+        "According to McGregor's Theory X, workers prefer to be directed and avoid responsibility. Theory X assumes that people dislike work, lack ambition, and need close supervision and control. Options A, B, and C describe Theory Y assumptions.",
+    },
+  ],
+};
+
+export default IntroManagement;

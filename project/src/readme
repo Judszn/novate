@@ -1,1036 +1,993 @@
-import { useState, useEffect } from "react";
-import {
-BookOpen,
-CheckCircle,
-Clock,
-RotateCcw,
-XCircle,
-AlertCircle,
-Award,
-ArrowRight,
-Save,
-} from "lucide-react";
-
-import examData from "./Database/question";
-// Sample data structure similar to the provided JSON
-
-export default function QuizApp() {
-const [quizStarted, setQuizStarted] = useState(false);
-const [questionCount, setQuestionCount] = useState(5);
-const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-const [selectedQuestions, setSelectedQuestions] = useState([]);
-const [selectedAnswer, setSelectedAnswer] = useState(null);
-const [answerSubmitted, setAnswerSubmitted] = useState(false);
-const [score, setScore] = useState(0);
-const [quizCompleted, setQuizCompleted] = useState(false);
-const [timer, setTimer] = useState(0);
-const [timerActive, setTimerActive] = useState(false);
-const [results, setResults] = useState([]);
-
-// Initialize or reset quiz
-const startQuiz = () => {
-// Randomly select questions based on questionCount
-const shuffled = [...examData.multiple_choice_questions].sort(
-() => 0.5 - Math.random()
-);
-const selected = shuffled.slice(0, questionCount);
-
-    setSelectedQuestions(selected);
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setQuizStarted(true);
-    setQuizCompleted(false);
-    setAnswerSubmitted(false);
-    setSelectedAnswer(null);
-    setTimer(0);
-    setTimerActive(true);
-    setResults([]);
-
-};
-
-// Handle timer
-useEffect(() => {
-let interval;
-if (timerActive && quizStarted && !quizCompleted) {
-interval = setInterval(() => {
-setTimer((prevTime) => prevTime + 1);
-}, 1000);
-}
-
-    return () => clearInterval(interval);
-
-}, [timerActive, quizStarted, quizCompleted]);
-
-// Format time for display
-const formatTime = (seconds) => {
-const mins = Math.floor(seconds / 60);
-const secs = seconds % 60;
-return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-};
-
-// Handle answer selection
-const handleAnswerSelect = (option) => {
-if (!answerSubmitted) {
-setSelectedAnswer(option);
-}
-};
-
-// Submit answer and check if correct
-const submitAnswer = () => {
-if (selectedAnswer) {
-const currentQuestion = selectedQuestions[currentQuestionIndex];
-const isCorrect = selectedAnswer === currentQuestion.correct_answer;
-
-      if (isCorrect) {
-        setScore(score + 1);
-      }
-
-      // Save result for this question
-      setResults([
-        ...results,
-        {
-          questionNumber: currentQuestion.question_number,
-          isCorrect,
-          selectedAnswer,
-          correctAnswer: currentQuestion.correct_answer,
-        },
-      ]);
-
-      setAnswerSubmitted(true);
-    }
-
-};
-
-// Move to next question or complete quiz
-const handleNextQuestion = () => {
-if (currentQuestionIndex < selectedQuestions.length - 1) {
-setCurrentQuestionIndex(currentQuestionIndex + 1);
-setSelectedAnswer(null);
-setAnswerSubmitted(false);
-} else {
-setQuizCompleted(true);
-setTimerActive(false);
-}
-};
-
-// Restart the quiz
-const restartQuiz = () => {
-setQuizStarted(false);
-};
-
-// Current question being displayed
-const currentQuestion = selectedQuestions[currentQuestionIndex];
-
-return (
-<div className="bg-gray-50 min-h-screen py-8">
-<div className="max-w-4xl mx-auto px-4">
-<header className="text-center mb-8">
-<h1 className="text-2xl font-bold text-green-800 mb-2">
-{examData.exam_details.course_name}
-</h1>
-<p className="text-gray-600">{examData.exam_details.university}</p>
-<p className="text-gray-600">
-{examData.exam_details.course_code} •{" "}
-{examData.exam_details.academic_year}
-</p>
-</header>
-
-        {!quizStarted ? (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <BookOpen className="mr-2 text-green-700" size={20} />
-              Practice Quiz Configuration
-            </h2>
-
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">
-                Number of Questions:
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {[5, 10, 15, 20, examData.multiple_choice_questions.length].map(
-                  (num) => (
-                    <button
-                      key={num}
-                      className={`px-4 py-2 rounded ${
-                        questionCount === num
-                          ? "bg-green-600 text-white"
-                          : "bg-gray-200 text-gray-800 hover:bg-gray-300"
-                      }`}
-                      onClick={() => setQuestionCount(num)}
-                    >
-                      {num === examData.multiple_choice_questions.length
-                        ? "All"
-                        : num}
-                    </button>
-                  )
-                )}
-              </div>
-            </div>
-
-            <button
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-md transition flex items-center justify-center"
-              onClick={startQuiz}
-            >
-              <BookOpen className="mr-2" size={18} />
-              Start Practice Quiz
-            </button>
-          </div>
-        ) : quizCompleted ? (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                <Award className="text-green-600" size={32} />
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Quiz Completed!</h2>
-              <p className="text-gray-600 mb-1">
-                Time Taken: {formatTime(timer)}
-              </p>
-              <p className="text-xl font-semibold">
-                Score: {score}/{selectedQuestions.length} (
-                {Math.round((score / selectedQuestions.length) * 100)}%)
-              </p>
-            </div>
-
-            <div className="mb-6">
-              <h3 className="font-semibold text-lg mb-3 border-b pb-2">
-                Question Summary
-              </h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                {results.map((result, index) => (
-                  <div
-                    key={index}
-                    className={`p-3 rounded-md flex items-center ${
-                      result.isCorrect
-                        ? "bg-green-50 border-l-4 border-green-500"
-                        : "bg-red-50 border-l-4 border-red-500"
-                    }`}
-                  >
-                    <div className="mr-3">
-                      {result.isCorrect ? (
-                        <CheckCircle className="text-green-500" size={20} />
-                      ) : (
-                        <XCircle className="text-red-500" size={20} />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
-                        Question {index + 1}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {result.isCorrect
-                          ? `Correct: ${result.correctAnswer}`
-                          : `Your answer: ${result.selectedAnswer} | Correct: ${result.correctAnswer}`}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-md transition flex items-center justify-center"
-                onClick={restartQuiz}
-              >
-                <RotateCcw className="mr-2" size={18} />
-                Practice Again
-              </button>
-              <button
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md transition flex items-center justify-center"
-                onClick={() => {
-                  // Review functionality would be implemented here
-                  alert("Review feature would be implemented here");
-                }}
-              >
-                <BookOpen className="mr-2" size={18} />
-                Review All Questions
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center text-gray-600">
-                <BookOpen className="mr-1" size={16} />
-                <span>
-                  Question {currentQuestionIndex + 1} of{" "}
-                  {selectedQuestions.length}
-                </span>
-              </div>
-              <div className="flex items-center text-gray-600">
-                <Clock className="mr-1" size={16} />
-                <span>{formatTime(timer)}</span>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4">
-                {currentQuestion.question_text}
-              </h3>
-
-              <div className="space-y-3">
-                {Object.entries(currentQuestion.options).map(([key, value]) => (
-                  <button
-                    key={key}
-                    className={`w-full text-left p-3 rounded-md border transition flex items-center ${
-                      selectedAnswer === key
-                        ? answerSubmitted
-                          ? key === currentQuestion.correct_answer
-                            ? "bg-green-100 border-green-500"
-                            : "bg-red-100 border-red-500"
-                          : "bg-blue-100 border-blue-500"
-                        : answerSubmitted &&
-                          key === currentQuestion.correct_answer
-                        ? "bg-green-100 border-green-500"
-                        : "bg-white border-gray-300 hover:bg-gray-50"
-                    }`}
-                    onClick={() => handleAnswerSelect(key)}
-                    disabled={answerSubmitted}
-                  >
-                    <div className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full mr-3">
-                      {key}
-                    </div>
-                    <span>{value}</span>
-                    {answerSubmitted &&
-                      key === currentQuestion.correct_answer && (
-                        <CheckCircle
-                          className="ml-auto text-green-600"
-                          size={20}
-                        />
-                      )}
-                    {answerSubmitted &&
-                      selectedAnswer === key &&
-                      key !== currentQuestion.correct_answer && (
-                        <XCircle className="ml-auto text-red-600" size={20} />
-                      )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {answerSubmitted && (
-              <div
-                className={`mb-6 p-4 rounded-md ${
-                  selectedAnswer === currentQuestion.correct_answer
-                    ? "bg-green-50 border-l-4 border-green-500"
-                    : "bg-red-50 border-l-4 border-red-500"
-                }`}
-              >
-                <div className="flex items-start">
-                  <div className="mr-3 mt-1">
-                    {selectedAnswer === currentQuestion.correct_answer ? (
-                      <CheckCircle className="text-green-500" size={20} />
-                    ) : (
-                      <AlertCircle className="text-red-500" size={20} />
-                    )}
-                  </div>
-                  <div>
-                    <h4 className="font-medium">
-                      {selectedAnswer === currentQuestion.correct_answer
-                        ? "Correct!"
-                        : "Incorrect"}
-                    </h4>
-                    <p className="text-gray-700 mt-1">
-                      {currentQuestion.explanation}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-between">
-              {!answerSubmitted ? (
-                <button
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={submitAnswer}
-                  disabled={!selectedAnswer}
-                >
-                  Submit Answer
-                </button>
-              ) : (
-                <button
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-md transition flex items-center"
-                  onClick={handleNextQuestion}
-                >
-                  {currentQuestionIndex < selectedQuestions.length - 1 ? (
-                    <>
-                      Next Question
-                      <ArrowRight className="ml-2" size={18} />
-                    </>
-                  ) : (
-                    <>
-                      Complete Quiz
-                      <Save className="ml-2" size={18} />
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-
-);
-}
-import { useState, useEffect } from "react";
-import {
-BookOpen,
-CheckCircle,
-Clock,
-RotateCcw,
-XCircle,
-AlertCircle,
-Award,
-ArrowRight,
-Save,
-GraduationCap,
-ChevronLeft,
-Grid3x3,
-Target,
-} from "lucide-react";
-
-// Mock data structure - replace with your actual data
-const mockExamData = {
-100: {
-"CSC 101": {
-exam_details: {
-course_name: "Introduction to Computer Science",
-course_code: "CSC 101",
-university: "University of Technology",
-academic_year: "2023/2024",
-level: "100",
-},
-multiple_choice_questions: [
-{
-question_number: 1,
-question_text: "What does CPU stand for?",
-options: {
-A: "Central Processing Unit",
-B: "Computer Processing Unit",
-C: "Central Program Unit",
-D: "Computer Program Unit",
-},
-correct_answer: "A",
-explanation:
-"CPU stands for Central Processing Unit, which is the main component that executes instructions.",
-},
-{
-question_number: 2,
-question_text: "Which of the following is a programming language?",
-options: {
-A: "HTML",
-B: "Python",
-C: "CSS",
-D: "HTTP",
-},
-correct_answer: "B",
-explanation:
-"Python is a high-level programming language used for various applications.",
-},
-],
-},
-"MTH 101": {
-exam_details: {
-course_name: "Calculus I",
-course_code: "MTH 101",
-university: "University of Technology",
-academic_year: "2023/2024",
-level: "100",
-},
-multiple_choice_questions: [
-{
-question_number: 1,
-question_text: "What is the derivative of x²?",
-options: {
-A: "x",
-B: "2x",
-C: "x²",
-D: "2x²",
-},
-correct_answer: "B",
-explanation: "The derivative of x² is 2x using the power rule.",
-},
-],
-},
-},
-200: {
-"CSC 201": {
-exam_details: {
-course_name: "Data Structures",
-course_code: "CSC 201",
-university: "University of Technology",
-academic_year: "2023/2024",
-level: "200",
-},
-multiple_choice_questions: [
-{
-question_number: 1,
-question_text: "Which data structure follows LIFO principle?",
-options: {
-A: "Queue",
-B: "Stack",
-C: "Array",
-D: "Linked List",
-},
-correct_answer: "B",
-explanation: "Stack follows Last In First Out (LIFO) principle.",
-},
-],
-},
-},
-300: {
-"CSC 301": {
-exam_details: {
-course_name: "Software Engineering",
-course_code: "CSC 301",
-university: "University of Technology",
-academic_year: "2023/2024",
-level: "300",
-},
-multiple_choice_questions: [
-{
-question_number: 1,
-question_text: "Which is an Agile methodology?",
-options: {
-A: "Waterfall",
-B: "Spiral",
-C: "Scrum",
-D: "V-Model",
-},
-correct_answer: "C",
-explanation:
-"Scrum is a popular Agile framework for software development.",
-},
-],
-},
-},
-400: {
-"CSC 401": {
-exam_details: {
-course_name: "Artificial Intelligence",
-course_code: "CSC 401",
-university: "University of Technology",
-academic_year: "2023/2024",
-level: "400",
-},
-multiple_choice_questions: [
-{
-question_number: 1,
-question_text: "What is machine learning?",
-options: {
-A: "Programming computers manually",
-B: "Teaching computers to learn from data",
-C: "Building computer hardware",
-D: "Designing user interfaces",
-},
-correct_answer: "B",
-explanation:
-"Machine learning involves algorithms that learn patterns from data.",
-},
-],
-},
-},
-};
-
-export default function QuizApp() {
-// Navigation states
-const [currentView, setCurrentView] = useState("level-selection"); // level-selection, course-selection, quiz-config, quiz-active, quiz-complete
-const [selectedLevel, setSelectedLevel] = useState(null);
-const [selectedCourse, setSelectedCourse] = useState(null);
-const [currentExamData, setCurrentExamData] = useState(null);
-
-// Quiz states
-const [quizStarted, setQuizStarted] = useState(false);
-const [questionCount, setQuestionCount] = useState(5);
-const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-const [selectedQuestions, setSelectedQuestions] = useState([]);
-const [selectedAnswer, setSelectedAnswer] = useState(null);
-const [answerSubmitted, setAnswerSubmitted] = useState(false);
-const [score, setScore] = useState(0);
-const [quizCompleted, setQuizCompleted] = useState(false);
-const [timer, setTimer] = useState(0);
-const [timerActive, setTimerActive] = useState(false);
-const [results, setResults] = useState([]);
-
-// Handle level selection
-const handleLevelSelect = (level) => {
-setSelectedLevel(level);
-setCurrentView("course-selection");
-};
-
-// Handle course selection
-const handleCourseSelect = (courseCode) => {
-setSelectedCourse(courseCode);
-setCurrentExamData(mockExamData[selectedLevel][courseCode]);
-setCurrentView("quiz-config");
-};
-
-// Initialize or reset quiz
-const startQuiz = () => {
-if (!currentExamData?.multiple_choice_questions) return;
-
-    const shuffled = [...currentExamData.multiple_choice_questions].sort(
-      () => 0.5 - Math.random()
-    );
-    const selected = shuffled.slice(
-      0,
-      Math.min(questionCount, shuffled.length)
-    );
-
-    setSelectedQuestions(selected);
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setQuizStarted(true);
-    setQuizCompleted(false);
-    setAnswerSubmitted(false);
-    setSelectedAnswer(null);
-    setTimer(0);
-    setTimerActive(true);
-    setResults([]);
-    setCurrentView("quiz-active");
-
-};
-
-// Handle timer
-useEffect(() => {
-let interval;
-if (timerActive && quizStarted && !quizCompleted) {
-interval = setInterval(() => {
-setTimer((prevTime) => prevTime + 1);
-}, 1000);
-}
-return () => clearInterval(interval);
-}, [timerActive, quizStarted, quizCompleted]);
-
-// Format time for display
-const formatTime = (seconds) => {
-const mins = Math.floor(seconds / 60);
-const secs = seconds % 60;
-return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-};
-
-// Handle answer selection
-const handleAnswerSelect = (option) => {
-if (!answerSubmitted) {
-setSelectedAnswer(option);
-}
-};
-
-// Submit answer and check if correct
-const submitAnswer = () => {
-if (selectedAnswer) {
-const currentQuestion = selectedQuestions[currentQuestionIndex];
-const isCorrect = selectedAnswer === currentQuestion.correct_answer;
-
-      if (isCorrect) {
-        setScore(score + 1);
-      }
-
-      setResults([
-        ...results,
-        {
-          questionNumber: currentQuestion.question_number,
-          isCorrect,
-          selectedAnswer,
-          correctAnswer: currentQuestion.correct_answer,
-        },
-      ]);
-
-      setAnswerSubmitted(true);
-    }
-
-};
-
-// Move to next question or complete quiz
-const handleNextQuestion = () => {
-if (currentQuestionIndex < selectedQuestions.length - 1) {
-setCurrentQuestionIndex(currentQuestionIndex + 1);
-setSelectedAnswer(null);
-setAnswerSubmitted(false);
-} else {
-setQuizCompleted(true);
-setTimerActive(false);
-setCurrentView("quiz-complete");
-}
-};
-
-// Reset to level selection
-const resetToLevelSelection = () => {
-setCurrentView("level-selection");
-setSelectedLevel(null);
-setSelectedCourse(null);
-setCurrentExamData(null);
-setQuizStarted(false);
-setQuizCompleted(false);
-};
-
-// Go back to course selection
-const backToCourseSelection = () => {
-setCurrentView("course-selection");
-setSelectedCourse(null);
-setCurrentExamData(null);
-};
-
-// Get available levels
-const availableLevels = Object.keys(mockExamData);
-
-// Get available courses for selected level
-const availableCourses = selectedLevel
-? Object.keys(mockExamData[selectedLevel])
-: [];
-
-// Current question being displayed
-const currentQuestion = selectedQuestions[currentQuestionIndex];
-
-return (
-<div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8">
-<div className="max-w-4xl mx-auto px-4">
-{/_ Header _/}
-<header className="text-center mb-8">
-<div className="flex items-center justify-center mb-4">
-<GraduationCap className="text-indigo-600 mr-3" size={32} />
-<h1 className="text-3xl font-bold text-indigo-800">Prep Mate</h1>
-</div>
-<p className="text-gray-600">Practice exams for all levels</p>
-</header>
-
-        {/* Level Selection View */}
-        {currentView === "level-selection" && (
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-center mb-8 flex items-center justify-center">
-              <Target className="mr-3 text-indigo-600" size={24} />
-              Select Your Level
-            </h2>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {availableLevels.map((level) => (
-                <button
-                  key={level}
-                  className="group relative bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white p-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
-                  onClick={() => handleLevelSelect(level)}
-                >
-                  <div className="text-center">
-                    <div className="text-3xl font-bold mb-2">L{level}</div>
-                    <div className="text-sm opacity-90">Level {level}</div>
-                  </div>
-                  <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300"></div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Course Selection View */}
-        {currentView === "course-selection" && (
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <div className="flex items-center mb-6">
-              <button
-                onClick={() => setCurrentView("level-selection")}
-                className="mr-4 p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <h2 className="text-2xl font-bold flex items-center">
-                <BookOpen className="mr-3 text-indigo-600" size={24} />
-                Level {selectedLevel} Courses
-              </h2>
-            </div>
-
-            <div className="grid gap-4">
-              {availableCourses.map((courseCode) => {
-                const courseData = mockExamData[selectedLevel][courseCode];
-                return (
-                  <button
-                    key={courseCode}
-                    className="text-left p-6 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 border border-gray-200 hover:border-indigo-300 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-sm hover:shadow-md"
-                    onClick={() => handleCourseSelect(courseCode)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                          {courseData.exam_details.course_code}
-                        </h3>
-                        <p className="text-gray-600 mb-2">
-                          {courseData.exam_details.course_name}
-                        </p>
-                        <p className="text-sm text-indigo-600">
-                          {courseData.multiple_choice_questions.length}{" "}
-                          questions available
-                        </p>
-                      </div>
-                      <ArrowRight className="text-indigo-400" size={20} />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Quiz Configuration View */}
-        {currentView === "quiz-config" && currentExamData && (
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <div className="flex items-center mb-6">
-              <button
-                onClick={backToCourseSelection}
-                className="mr-4 p-2 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-              >
-                <ChevronLeft size={20} />
-              </button>
-              <div>
-                <h2 className="text-2xl font-bold text-indigo-800">
-                  {currentExamData.exam_details.course_name}
-                </h2>
-                <p className="text-gray-600">
-                  {currentExamData.exam_details.course_code} • Level{" "}
-                  {currentExamData.exam_details.level}
-                </p>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-700 mb-3 font-medium">
-                Number of Questions:
-              </label>
-              <div className="flex flex-wrap gap-3">
-                {[
-                  5,
-                  10,
-                  15,
-                  20,
-                  currentExamData.multiple_choice_questions.length,
-                ].map((num) => (
-                  <button
-                    key={num}
-                    className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-                      questionCount === num
-                        ? "bg-indigo-600 text-white shadow-lg scale-105"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105"
-                    }`}
-                    onClick={() =>
-                      setQuestionCount(
-                        Math.min(
-                          num,
-                          currentExamData.multiple_choice_questions.length
-                        )
-                      )
-                    }
-                  >
-                    {num === currentExamData.multiple_choice_questions.length
-                      ? "All"
-                      : num}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg flex items-center justify-center"
-              onClick={startQuiz}
-            >
-              <BookOpen className="mr-2" size={18} />
-              Start Practice Quiz
-            </button>
-          </div>
-        )}
-
-        {/* Quiz Active View */}
-        {currentView === "quiz-active" && currentQuestion && (
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center text-gray-600">
-                <Grid3x3 className="mr-2" size={16} />
-                <span>
-                  Question {currentQuestionIndex + 1} of{" "}
-                  {selectedQuestions.length}
-                </span>
-              </div>
-              <div className="flex items-center text-gray-600">
-                <Clock className="mr-2" size={16} />
-                <span className="font-mono">{formatTime(timer)}</span>
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold mb-6 text-gray-800">
-                {currentQuestion.question_text}
-              </h3>
-
-              <div className="space-y-3">
-                {Object.entries(currentQuestion.options).map(([key, value]) => (
-                  <button
-                    key={key}
-                    className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center ${
-                      selectedAnswer === key
-                        ? answerSubmitted
-                          ? key === currentQuestion.correct_answer
-                            ? "bg-green-50 border-green-400 shadow-md"
-                            : "bg-red-50 border-red-400 shadow-md"
-                          : "bg-indigo-50 border-indigo-400 shadow-md"
-                        : answerSubmitted &&
-                          key === currentQuestion.correct_answer
-                        ? "bg-green-50 border-green-400 shadow-md"
-                        : "bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm"
-                    }`}
-                    onClick={() => handleAnswerSelect(key)}
-                    disabled={answerSubmitted}
-                  >
-                    <div className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full mr-4 font-semibold">
-                      {key}
-                    </div>
-                    <span className="flex-1">{value}</span>
-                    {answerSubmitted &&
-                      key === currentQuestion.correct_answer && (
-                        <CheckCircle
-                          className="ml-auto text-green-600"
-                          size={24}
-                        />
-                      )}
-                    {answerSubmitted &&
-                      selectedAnswer === key &&
-                      key !== currentQuestion.correct_answer && (
-                        <XCircle className="ml-auto text-red-600" size={24} />
-                      )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {answerSubmitted && (
-              <div
-                className={`mb-6 p-6 rounded-xl ${
-                  selectedAnswer === currentQuestion.correct_answer
-                    ? "bg-green-50 border-l-4 border-green-500"
-                    : "bg-red-50 border-l-4 border-red-500"
-                }`}
-              >
-                <div className="flex items-start">
-                  <div className="mr-4 mt-1">
-                    {selectedAnswer === currentQuestion.correct_answer ? (
-                      <CheckCircle className="text-green-500" size={24} />
-                    ) : (
-                      <AlertCircle className="text-red-500" size={24} />
-                    )}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-lg mb-2">
-                      {selectedAnswer === currentQuestion.correct_answer
-                        ? "Correct!"
-                        : "Incorrect"}
-                    </h4>
-                    <p className="text-gray-700">
-                      {currentQuestion.explanation}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-between">
-              {!answerSubmitted ? (
-                <button
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg"
-                  onClick={submitAnswer}
-                  disabled={!selectedAnswer}
-                >
-                  Submit Answer
-                </button>
-              ) : (
-                <button
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center"
-                  onClick={handleNextQuestion}
-                >
-                  {currentQuestionIndex < selectedQuestions.length - 1 ? (
-                    <>
-                      Next Question
-                      <ArrowRight className="ml-2" size={18} />
-                    </>
-                  ) : (
-                    <>
-                      Complete Quiz
-                      <Save className="ml-2" size={18} />
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Quiz Complete View */}
-        {currentView === "quiz-complete" && (
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-blue-500 rounded-full mb-6">
-                <Award className="text-white" size={40} />
-              </div>
-              <h2 className="text-3xl font-bold mb-4">Quiz Completed!</h2>
-              <div className="space-y-2">
-                <p className="text-gray-600 text-lg">
-                  Time Taken: {formatTime(timer)}
-                </p>
-                <p className="text-2xl font-bold">
-                  Score: {score}/{selectedQuestions.length} (
-                  {Math.round((score / selectedQuestions.length) * 100)}%)
-                </p>
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <h3 className="font-bold text-xl mb-4 border-b-2 border-gray-200 pb-2">
-                Question Summary
-              </h3>
-              <div className="space-y-3 max-h-64 overflow-y-auto">
-                {results.map((result, index) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-lg flex items-center ${
-                      result.isCorrect
-                        ? "bg-green-50 border-l-4 border-green-500"
-                        : "bg-red-50 border-l-4 border-red-500"
-                    }`}
-                  >
-                    <div className="mr-4">
-                      {result.isCorrect ? (
-                        <CheckCircle className="text-green-500" size={24} />
-                      ) : (
-                        <XCircle className="text-red-500" size={24} />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">Question {index + 1}</p>
-                      <p className="text-sm text-gray-600">
-                        {result.isCorrect
-                          ? `Correct: ${result.correctAnswer}`
-                          : `Your answer: ${result.selectedAnswer} | Correct: ${result.correctAnswer}`}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                className="flex-1 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-medium py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg flex items-center justify-center"
-                onClick={() => setCurrentView("quiz-config")}
-              >
-                <RotateCcw className="mr-2" size={18} />
-                Practice Again
-              </button>
-              <button
-                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg flex items-center justify-center"
-                onClick={resetToLevelSelection}
-              >
-                <GraduationCap className="mr-2" size={18} />
-                Choose Different Level
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-
-);
-}
+// import React, { useState, useEffect } from "react";
+// import {
+// ChevronLeft,
+// ChevronRight,
+// RotateCcw,
+// Search,
+// BookOpen,
+// CircleUserRound,
+// Home,
+// Trophy,
+// Clock,
+// CheckCircle,
+// XCircle,
+// } from "lucide-react";
+// import INTROEM from "./Database/IntroEM";
+// import BUSFRENCH from "./Database/BusFrench";
+// import BUSCOMM from "./Database/BusinessComm";
+// import BUSECONS from "./Database/BusEcons";
+// import LOGO from "./assets/LOGO.png";
+// import BUSSTATS from "./Database/BusStats";
+// import PROGRAMMINGFUNDAMENTALS from "./Database/ProgrammingFundamentals";
+// import INTROMGT from "./Database/IntroMGT";
+// import CRITICALTHINKING from "./Database/Logic&criticalthinking";
+// import CONSTITUTIONALLAWONE from "./Database/ConstitutionalLaw1";
+// import CONTRACTLAWONE from "./Database/ContractLaw1";
+
+// // Course registry - add your imported courses here
+// const COURSES = {
+// "intro-em": INTROEM,
+// "bus-french": BUSFRENCH,
+// "bus-comm": BUSCOMM,
+// "bus-econs": BUSECONS,
+// "bus-stats": BUSSTATS,
+// "programming-fundamentals": PROGRAMMINGFUNDAMENTALS,
+// "intro-management": INTROMGT,
+// "critical-thinking": CRITICALTHINKING,
+// "constitutional-law1": CONSTITUTIONALLAWONE,
+// "contract-law1": CONTRACTLAWONE,
+
+// // Add more courses as you import them
+// };
+
+// const PROGRAMS = {
+// MKT: {
+// name: "BSC. MARKETING",
+// id: "MKT",
+// courses: [
+// "intro-em",
+// "bus-french",
+// "bus-comm",
+// "bus-econs",
+// "bus-stats",
+// "intro-management",
+// "critical-thinking",
+// ],
+// color: "bg-blue-500",
+// },
+// BACT: {
+// name: "BSC. ACCOUNTING",
+// id: "BACT",
+// courses: [
+// "intro-em",
+// "bus-french",
+// "bus-comm",
+// "bus-econs",
+// "bus-stats",
+// "intro-management",
+// "critical-thinking",
+// ],
+// color: "bg-green-500",
+// },
+// BBAF: {
+// name: "BSC. BANKING AND FINANCE",
+// id: "BBAF",
+// courses: [
+// "intro-em",
+// "bus-french",
+// "bus-comm",
+// "bus-econs",
+// "bus-stats",
+// "intro-management",
+// "critical-thinking",
+// ],
+// color: "bg-purple-500",
+// },
+// ADM: {
+// name: "BSC. BUSINESS ADMINISTRATION",
+// id: "ADM",
+// courses: [
+// "bus-econs",
+// "intro-em",
+// "bus-french",
+// "bus-comm",
+// "bus-stats",
+// "intro-management",
+// "critical-thinking",
+// ],
+// color: "bg-violet-500",
+// },
+// BAAF: {
+// name: "BSC. ACCOUNTING AND FINANCE",
+// id: "BAAF",
+// courses: [
+// "intro-em",
+// "bus-french",
+// "bus-comm",
+// "bus-econs",
+// "bus-stats",
+// "intro-management",
+// "critical-thinking",
+// ],
+// color: "bg-indigo-500",
+// },
+// BITM: {
+// name: "BSC. INFORMATION TECHNOLOGY MGT",
+// id: "BITM",
+// courses: [
+// "intro-em",
+// "bus-french",
+// "bus-comm",
+// "bus-stats",
+// "intro-management",
+// "programming-fundamentals",
+// "critical-thinking",
+// ],
+// color: "bg-red-500",
+// },
+// PBPR: {
+// name: "BA. PUBLIC RELATIONS MANAGEMENT",
+// id: "PBPR",
+// courses: [
+// "intro-em",
+// "bus-french",
+// "bus-comm",
+// "bus-stats",
+// "intro-management",
+// "critical-thinking",
+// ],
+// color: "bg-yellow-500",
+// },
+// LLB: {
+// name: "BACHELOR of LAW",
+// id: "LLB",
+// courses: ["constitutional-law1", "contract-law1"],
+// color: "bg-black",
+// },
+// BASC: {
+// name: "BSC. ACTUARIAL SCIENCE",
+// id: "BASC",
+// courses: ["intro-em"],
+// color: "bg-pink-500",
+// },
+// BRMF: {
+// name: "BSC. REAL ESTATE MGT & FINANCE",
+// id: "BRMF",
+// courses: ["intro-em"],
+// color: "bg-amber-500",
+// },
+// BBBEC: {
+// name: "BSC. BUSINESS ECONOMICS",
+// id: "BBEC",
+// courses: ["intro-em"],
+// color: "bg-orange-500",
+// },
+// BLTM: {
+// name: "BSC. LOGISTICS & TRANSPORT MGT",
+// id: "BLTM",
+// courses: [
+// "intro-em",
+// "bus-french",
+// "bus-comm",
+// "bus-econs",
+// "bus-stats",
+// "intro-management",
+// "critical-thinking",
+// ],
+// color: "bg-lime-500",
+// },
+// BACS: {
+// name: "BA. COMMUNICATION STUDIES",
+// id: "BACS",
+// courses: ["intro-em"],
+// color: "bg-gray-500",
+// },
+// };
+
+// export default function PrepMateApp() {
+// const [currentView, setCurrentView] = useState("start");
+// const [isAuthenticated, setIsAuthenticated] = useState(false);
+// const [selectedProgram, setSelectedProgram] = useState("");
+// const [selectedCourse, setSelectedCourse] = useState("");
+// const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+// const [selectedAnswers, setSelectedAnswers] = useState({});
+// const [showExplanation, setShowExplanation] = useState(false);
+// const [quizStarted, setQuizStarted] = useState(false);
+// const [searchTerm, setSearchTerm] = useState("");
+// const [timeSpent, setTimeSpent] = useState(0);
+// const [quizCompleted, setQuizCompleted] = useState(false);
+// const [questionMode, setQuestionMode] = useState("standard"); // "standard" or "all"
+// const [filteredQuestions, setFilteredQuestions] = useState([]);
+
+// const shuffleArray = (array) => {
+// const shuffled = [...array];
+// for (let i = shuffled.length - 1; i > 0; i--) {
+// const j = Math.floor(Math.random() \* (i + 1));
+// [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+// }
+// return shuffled;
+// };
+
+// useEffect(() => {
+// if (!selectedCourse) return;
+// const course = COURSES[selectedCourse];
+// const allQuestions = course.multiple_choice_questions;
+// const shuffled = shuffleArray(allQuestions);
+
+// const selected =
+// questionMode === "standard" ? shuffled.slice(0, 20) : shuffled;
+
+// setFilteredQuestions(selected);
+// setCurrentQuestionIndex(0); // reset index on mode change
+// setSelectedAnswers({});
+// setShowExplanation(false);
+// }, [selectedCourse, questionMode]);
+
+// // Timer effect
+// useEffect(() => {
+// let interval;
+// if (quizStarted && !quizCompleted) {
+// interval = setInterval(() => {
+// setTimeSpent((prev) => prev + 1);
+// }, 1000);
+// }
+// return () => clearInterval(interval);
+// }, [quizStarted, quizCompleted]);
+
+// const formatTime = (seconds) => {
+// const mins = Math.floor(seconds / 60);
+// const secs = seconds % 60;
+// return `${mins.toString().padStart(2, "0")}:${secs
+//       .toString()
+//       .padStart(2, "0")}`;
+// };
+
+// const handleAuthentication = (success) => {
+// setIsAuthenticated(success);
+// if (success) {
+// setCurrentView("dashboard");
+// }
+// };
+
+// const handleProgramSelect = (programId) => {
+// setSelectedProgram(programId);
+// setCurrentView("courses");
+// // setSearchTerm("");
+// };
+
+// const handleCourseSelect = (courseId) => {
+// setSelectedCourse(courseId);
+// setCurrentView("mcqs");
+// setCurrentQuestionIndex(0);
+// setSelectedAnswers({});
+// setShowExplanation(false);
+// setQuizStarted(false);
+// setTimeSpent(0);
+// setQuizCompleted(false);
+// };
+
+// const handleAnswerSelect = (answer) => {
+// if (quizCompleted) return;
+
+// if (!quizStarted) {
+// setQuizStarted(true);
+// }
+
+// setSelectedAnswers({
+// ...selectedAnswers,
+// [currentQuestionIndex]: answer,
+// });
+// setShowExplanation(true);
+// };
+
+// const handleNextQuestion = () => {
+// const course = COURSES[selectedCourse];
+// if (currentQuestionIndex < course.multiple_choice_questions.length - 1) {
+// setCurrentQuestionIndex(currentQuestionIndex + 1);
+// setShowExplanation(false);
+// } else {
+// setQuizCompleted(true);
+// setCurrentView("review");
+// }
+// };
+
+// const handlePrevQuestion = () => {
+// if (currentQuestionIndex > 0) {
+// setCurrentQuestionIndex(currentQuestionIndex - 1);
+// setShowExplanation(!!selectedAnswers[currentQuestionIndex - 1]);
+// }
+// };
+
+// const calculateScore = () => {
+// const course = COURSES[selectedCourse];
+// const correct = course.multiple_choice_questions.filter(
+// (q, index) => selectedAnswers[index] === q.correct_answer
+// ).length;
+// return {
+// correct,
+// total: course.multiple_choice_questions.length,
+// percentage: Math.round(
+// (correct / course.multiple_choice_questions.length) \* 100
+// ),
+// };
+// };
+
+// const handleRestart = () => {
+// setCurrentQuestionIndex(0);
+// setSelectedAnswers({});
+// setShowExplanation(false);
+// setQuizStarted(false);
+// setTimeSpent(0);
+// setQuizCompleted(false);
+// setCurrentView("mcqs");
+// };
+
+// const filteredCourses = selectedProgram
+// ? PROGRAMS[selectedProgram].courses.filter(
+// (courseId) =>
+// COURSES[courseId].exam_details.course_name
+// .toLowerCase()
+// .includes(searchTerm.toLowerCase()) ||
+// COURSES[courseId].exam_details.course_code
+// .toLowerCase()
+// .includes(searchTerm.toLowerCase())
+// )
+// : Object.keys(COURSES).filter(
+// (courseId) =>
+// COURSES[courseId].exam_details.course_name
+// .toLowerCase()
+// .includes(searchTerm.toLowerCase()) ||
+// COURSES[courseId].exam_details.course_code
+// .toLowerCase()
+// .includes(searchTerm.toLowerCase())
+// );
+
+// const filteredPrograms = Object.entries(PROGRAMS).filter(
+// ([programId, program]) => {
+// const programMatches = program.name
+// .toLowerCase()
+// .includes(searchTerm.toLowerCase());
+// const courseMatches = program.courses.some(
+// (programId) =>
+// COURSES[programId].exam_details.course_name
+// .toLowerCase()
+// .includes(searchTerm.toLowerCase()) ||
+// COURSES[programId].exam_details.course_code
+// .toLowerCase()
+// .includes(searchTerm.toLowerCase())
+// );
+// return programMatches || courseMatches;
+// }
+// );
+
+// // Start Screen
+// if (currentView === "start") {
+// return (
+// <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 flex items-center justify-center p-4">
+// <div className="text-center text-white">
+// <div className="mb-8">
+// <div className="flex items-center justify-center mb-4 cursor-pointer">
+// <img
+// src={LOGO}
+// className="w-56 h-40 "
+// onClick={() => setCurrentView("auth")}
+// />
+// </div>
+
+// <p className="text-xl mb-8 text-blue-100">
+// Prep yourself for success
+// </p>
+// </div>
+
+// {/_ <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-12 rounded-full text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+// START
+// </button> _/}
+// </div>
+// </div>
+// );
+// }
+
+// // Authentication Screen
+// if (currentView === "auth") {
+// return (
+// <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 flex items-center justify-center p-4">
+// <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+// <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+// Authentication
+// </h2>
+// <div className="space-y-4">
+// <div>
+// <label className="block text-sm font-medium text-gray-700 mb-2">
+// Username
+// </label>
+// <input
+// type="text"
+// className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+// placeholder="Enter your username"
+// />
+// </div>
+// <div>
+// <label className="block text-sm font-medium text-gray-700 mb-2">
+// Password
+// </label>
+// <input
+// type="password"
+// className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+// placeholder="Enter your password"
+// />
+// </div>
+// <div className="flex space-x-4">
+// <button
+// onClick={() => handleAuthentication(true)}
+// className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition-colors"
+// >
+// Sign In
+// </button>
+// <button
+// onClick={() => handleAuthentication(false)}
+// className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition-colors"
+// >
+// Sign Up
+// </button>
+// </div>
+// </div>
+// </div>
+// </div>
+// );
+// }
+
+// // Dashboard
+// if (currentView === "dashboard") {
+// return (
+// // <div className="min-h-screen bg-gray-50">
+// // <header className="bg-white shadow-sm rounded-b-sm ">
+// // <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8">
+// // <div className="grid grid-cols-2 py-4 items-center justify-between">
+// // <img src={LOGO} className="w-24 h-17" />
+
+// // <div>
+// // <CircleUserRound className="w-8 h-8 text-gray-600" />
+// // <p>Profile</p>
+// // </div>
+// // <div className="flex items-center space-x-4">
+// // <div className="relative">
+// // <Search className=" w-5 h-5 absolute left-3 top-3 text-gray-400" />
+// // <input
+// // type="text"
+// // value={searchTerm}
+// // onChange={(e) => setSearchTerm(e.target.value)}
+// // placeholder="Search programs..."
+// // className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-96"
+// // />
+// // </div>
+// // </div>
+// // </div>
+// // </div>
+// // </header>
+// <div className="min-h-screen bg-gray-50">
+// <header className="bg-white shadow-sm rounded-b-sm">
+// <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8">
+// <div className="py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+// {/_ Top Section: Logo and Profile _/}
+// <div className="flex items-center justify-between p-3">
+// <img src={LOGO} className="w-24 h-17" alt="Logo" />
+// <div className="flex items-center space-x-2 lg:hidden">
+// <CircleUserRound className="w-8 h-8 text-gray-600" />
+// <p>Profile</p>
+// </div>
+// </div>
+
+// {/_ Search Input _/}
+// <div className="relative w-full lg:w-auto">
+// <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+// <input
+// type="text"
+// value={searchTerm}
+// onChange={(e) => setSearchTerm(e.target.value)}
+// placeholder="Search programs..."
+// className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full lg:w-96"
+// />
+// </div>
+
+// {/_ Profile for large screens _/}
+// <div className="hidden lg:flex items-center space-x-2">
+// <CircleUserRound className="w-8 h-8 text-gray-600" />
+// <p>Profile</p>
+// </div>
+// </div>
+// </div>
+// </header>
+
+// <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+// <div className="mb-8">
+// <h2 className="text-3xl font-bold text-gray-900 mb-2">
+// Choose Your Program
+// </h2>
+// <p className="text-gray-600">
+// Select a program to access your courses
+// </p>
+// </div>
+
+// <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+// {/_ {Object.entries(PROGRAMS).map(([programId, program]) => ( _/}
+// {filteredPrograms.map(([programId, program]) => (
+// <div
+// key={programId}
+// onClick={() => handleProgramSelect(programId)}
+// className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow border-l-4 border-blue-500"
+// >
+// <div className="flex items-center mb-4">
+// <div
+// className={`w-12 h-12 ${program.color} rounded-lg flex items-center justify-center`}
+// >
+// <BookOpen className="w-6 h-6 text-white" />
+// </div>
+// <div className="ml-4">
+// <h3 className="text-lg font-semibold text-gray-900">
+// {program.name}
+// </h3>
+// <p className="text-sm text-gray-600">
+// {program.courses.length} courses available
+// </p>
+// </div>
+// </div>
+// <div className="flex items-center text-sm text-gray-500">
+// <Clock className="w-4 h-4 mr-1" />
+// <span>Self-paced learning</span>
+// </div>
+// </div>
+// ))}
+// </div>
+// {/_ <div className="text-center absolute bottom  max-w-7xl mx-auto pt-10 font-light text-sm p-20 h-24 flex item-center justify-center">
+// <div>
+// Powered by Novate <img src="" alt="" />
+// </div>
+// </div> _/}
+// </main>
+// </div>
+// );
+// }
+
+// // Courses View
+// if (currentView === "courses") {
+// return (
+// <div className="min-h-screen bg-gray-50">
+// <header className="bg-white shadow-sm border-b">
+// <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+// <div className="flex justify-between items-center py-4">
+// <div className="flex items-center">
+// <button
+// onClick={() => setCurrentView("dashboard")}
+// className="mr-4 p-2 hover:bg-gray-100 rounded-lg"
+// >
+// <ChevronLeft className="w-5 h-5" />
+// </button>
+// <BookOpen className={`w-8 h-8 text-blue-600 mr-3`} />
+// <h1 className="text-2xl font-bold text-gray-900">
+// {PROGRAMS[selectedProgram].name}
+// </h1>
+// </div>
+// <div className="relative">
+// <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+// <input
+// type="text"
+// value={searchTerm}
+// onChange={(e) => setSearchTerm(e.target.value)}
+// placeholder="Search courses..."
+// className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+// />
+// </div>
+// </div>
+// </div>
+// </header>
+
+// <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+// <div className="mb-8">
+// <h2 className="text-3xl font-bold text-gray-900 mb-2">
+// Available Courses
+// </h2>
+// <p className="text-gray-600">Select a course to start practicing</p>
+// </div>
+
+// <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+// {filteredCourses.map((courseId) => {
+// const course = COURSES[courseId];
+// return (
+// <div
+// key={courseId}
+// onClick={() => handleCourseSelect(courseId)}
+// className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+// >
+// <div className="mb-4">
+// <h3 className="text-lg font-semibold text-gray-900 mb-2">
+// {course.exam_details.course_code}
+// </h3>
+// <p className="text-sm text-gray-600 mb-2">
+// {course.exam_details.course_name}
+// </p>
+// <p className="text-xs text-gray-500">
+// {course.exam_details.university}
+// </p>
+// </div>
+// <div className="flex items-center justify-between">
+// <span className="text-sm text-gray-600">
+// {course.multiple_choice_questions.length} questions
+// </span>
+// <ChevronRight className="w-5 h-5 text-gray-400" />
+// </div>
+// </div>
+// );
+// })}
+// </div>
+// </main>
+// </div>
+// );
+// }
+
+// // MCQs View
+// if (currentView === "mcqs") {
+// const course = COURSES[selectedCourse];
+// const currentQuestion =
+// course.multiple_choice_questions[currentQuestionIndex];
+// const selectedAnswer = selectedAnswers[currentQuestionIndex];
+
+// return (
+// // <div className="min-h-screen bg-gray-50">
+// // <header className="bg-white shadow-sm border-b">
+// // <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+// // <div className="flex justify-between items-center py-4">
+// // <div className="flex items-center">
+// // <button
+// // onClick={() => setCurrentView("courses")}
+// // className="mr-4 p-2 hover:bg-gray-100 rounded-lg"
+// // >
+// // <ChevronLeft className="w-5 h-5" />
+// // </button>
+// // <div>
+// // <h1 className="text-lg font-semibold text-gray-900">
+// // {course.exam_details.course_code}
+// // </h1>
+// // <p className="text-sm text-gray-600">
+// // Question {currentQuestionIndex + 1} of{" "}
+// // {course.multiple_choice_questions.length}
+// // </p>
+// // </div>
+// // </div>
+// // <div className="flex items-center space-x-4">
+// // <div className="flex items-center text-sm text-gray-600">
+// // <Clock className="w-4 h-4 mr-1" />
+// // <span>{formatTime(timeSpent)}</span>
+// // </div>
+// // </div>
+// // </div>
+// // </div>
+// // </header>
+
+// // <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+// // <div className="bg-white rounded-lg shadow-md p-8">
+// // <div className="mb-6">
+// // <h2 className="text-xl font-semibold text-gray-900 mb-4">
+// // {currentQuestion.question_text}
+// // </h2>
+
+// // <div className="space-y-3">
+// // {Object.entries(currentQuestion.options).map(
+// // ([option, text]) => {
+// // const isSelected = selectedAnswer === option;
+// // const isCorrect = option === currentQuestion.correct_answer;
+// // const showResult = showExplanation;
+
+// // let buttonClass =
+// // "w-full p-4 text-left border-2 rounded-lg transition-all ";
+
+// // if (showResult) {
+// // if (isCorrect) {
+// // buttonClass +=
+// // "border-green-500 bg-green-50 text-green-800";
+// // } else if (isSelected && !isCorrect) {
+// // buttonClass += "border-red-500 bg-red-50 text-red-800";
+// // } else {
+// // buttonClass +=
+// // "border-gray-200 bg-gray-50 text-gray-600";
+// // }
+// // } else {
+// // if (isSelected) {
+// // buttonClass +=
+// // "border-blue-500 bg-blue-50 text-blue-800";
+// // } else {
+// // buttonClass +=
+// // "border-gray-200 hover:border-gray-300 hover:bg-gray-50";
+// // }
+// // }
+
+// // return (
+// // <button
+// // key={option}
+// // onClick={() => handleAnswerSelect(option)}
+// // className={buttonClass}
+// // disabled={showExplanation}
+// // >
+// // <div className="flex items-center">
+// // <span className="font-semibold mr-3">{option}.</span>
+// // <span>{text}</span>
+// // {showResult && isCorrect && (
+// // <CheckCircle className="w-5 h-5 text-green-500 ml-auto" />
+// // )}
+// // {showResult && isSelected && !isCorrect && (
+// // <XCircle className="w-5 h-5 text-red-500 ml-auto" />
+// // )}
+// // </div>
+// // </button>
+// // );
+// // }
+// // )}
+// // </div>
+// // </div>
+
+// // {showExplanation && (
+// // <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+// // <h3 className="font-semibold text-blue-900 mb-2">
+// // Explanation:
+// // </h3>
+// // <p className="text-blue-800">{currentQuestion.explanation}</p>
+// // </div>
+// // )}
+
+// // <div className="flex justify-between">
+// // <button
+// // onClick={handlePrevQuestion}
+// // disabled={currentQuestionIndex === 0}
+// // className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+// // >
+// // <ChevronLeft className="w-4 h-4 mr-1" />
+// // Previous
+// // </button>
+
+// // <button
+// // onClick={handleNextQuestion}
+// // disabled={!showExplanation}
+// // className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+// // >
+// // {currentQuestionIndex ===
+// // course.multiple_choice_questions.length - 1
+// // ? "Finish"
+// // : "Next"}
+// // <ChevronRight className="w-4 h-4 ml-1" />
+// // </button>
+// // </div>
+// // </div>
+// // </main>
+// // </div>
+// <div className="min-h-screen bg-gray-50">
+// <header className="bg-white shadow-sm border-b">
+// <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+// <div className="flex justify-between items-center py-4">
+// <div className="flex items-center">
+// <button
+// onClick={() => setCurrentView("courses")}
+// className="mr-4 p-2 hover:bg-gray-100 rounded-lg"
+// >
+// <ChevronLeft className="w-5 h-5" />
+// </button>
+// <div>
+// <h1 className="text-lg font-semibold text-gray-900">
+// {course.exam_details.course_code}
+// </h1>
+// <p className="text-sm text-gray-600">
+// Question {currentQuestionIndex + 1} of{" "}
+// {filteredQuestions.length}
+// </p>
+// </div>
+// </div>
+// <div className="flex items-center space-x-4">
+// <div className="flex items-center text-sm text-gray-600">
+// <Clock className="w-4 h-4 mr-1" />
+// <span>{formatTime(timeSpent)}</span>
+// </div>
+// </div>
+// </div>
+// </div>
+// </header>
+
+// <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+// {/_ Mode Selector _/}
+// <div className="mb-6">
+// <label className="block mb-2 font-medium text-gray-700">
+// Question Mode:
+// </label>
+// <div className="flex space-x-4">
+// <button
+// onClick={() => setQuestionMode("standard")}
+// className={`px-4 py-2 rounded-lg border cursor-pointer ${
+//                   questionMode === "standard"
+//                     ? "bg-blue-500 text-white"
+//                     : "bg-white text-gray-700"
+//                 }`}
+// >
+// Standard (20)
+// </button>
+// <button
+// onClick={() => setQuestionMode("all")}
+// className={`px-4 py-2 rounded-lg border cursor-pointer ${
+//                   questionMode === "all"
+//                     ? "bg-blue-500 text-white"
+//                     : "bg-white text-gray-700"
+//                 }`}
+// >
+// All Questions
+// </button>
+// </div>
+// </div>
+
+// {/_ MCQ Content _/}
+// {currentQuestion && (
+// <div className="bg-white rounded-lg shadow-md p-8">
+// <div className="mb-6">
+// <h2 className="text-xl font-semibold text-gray-900 mb-4">
+// {currentQuestion.question_text}
+// </h2>
+
+// <div className="space-y-3">
+// {Object.entries(currentQuestion.options).map(
+// ([option, text]) => {
+// const isSelected = selectedAnswer === option;
+// const isCorrect =
+// option === currentQuestion.correct_answer;
+// const showResult = showExplanation;
+
+// let buttonClass =
+// "w-full p-4 text-left border-2 rounded-lg transition-all ";
+
+// if (showResult) {
+// if (isCorrect) {
+// buttonClass +=
+// "border-green-500 bg-green-50 text-green-800";
+// } else if (isSelected && !isCorrect) {
+// buttonClass +=
+// "border-red-500 bg-red-50 text-red-800";
+// } else {
+// buttonClass +=
+// "border-gray-200 bg-gray-50 text-gray-600";
+// }
+// } else {
+// if (isSelected) {
+// buttonClass +=
+// "border-blue-500 bg-blue-50 text-blue-800";
+// } else {
+// buttonClass +=
+// "border-gray-200 hover:border-gray-300 hover:bg-gray-50";
+// }
+// }
+
+// return (
+// <button
+// key={option}
+// onClick={() => handleAnswerSelect(option)}
+// className={buttonClass}
+// disabled={showExplanation}
+// >
+// <div className="flex items-center">
+// <span className="font-semibold mr-3">
+// {option}.
+// </span>
+// <span>{text}</span>
+// {showResult && isCorrect && (
+// <CheckCircle className="w-5 h-5 text-green-500 ml-auto" />
+// )}
+// {showResult && isSelected && !isCorrect && (
+// <XCircle className="w-5 h-5 text-red-500 ml-auto" />
+// )}
+// </div>
+// </button>
+// );
+// }
+// )}
+// </div>
+// </div>
+
+// {showExplanation && (
+// <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+// <h3 className="font-semibold text-blue-900 mb-2">
+// Explanation:
+// </h3>
+// <p className="text-blue-800">{currentQuestion.explanation}</p>
+// </div>
+// )}
+
+// <div className="flex justify-between">
+// <button
+// onClick={handlePrevQuestion}
+// disabled={currentQuestionIndex === 0}
+// className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+// >
+// <ChevronLeft className="w-4 h-4 mr-1" />
+// Previous
+// </button>
+
+// <button
+// onClick={handleNextQuestion}
+// disabled={!showExplanation}
+// className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+// >
+// {currentQuestionIndex === filteredQuestions.length - 1
+// ? "Finish"
+// : "Next"}
+// <ChevronRight className="w-4 h-4 ml-1" />
+// </button>
+// </div>
+// </div>
+// )}
+// </main>
+// </div>
+// );
+// }
+
+// // Review Screen
+// if (currentView === "review") {
+// const score = calculateScore();
+// const course = COURSES[selectedCourse];
+
+// return (
+// <div className="min-h-screen bg-gray-50">
+// <header className="bg-white shadow-sm border-b">
+// <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+// <div className="flex justify-between items-center py-4">
+// <h1 className="text-2xl font-bold text-gray-900">Quiz Results</h1>
+// </div>
+// </div>
+// </header>
+
+// <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+// <div className="bg-white rounded-lg shadow-md p-8 text-center mb-8">
+// <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+// <h2 className="text-3xl font-bold text-gray-900 mb-2">
+// Quiz Completed!
+// </h2>
+// <p className="text-xl text-gray-600 mb-6">
+// You scored {score.correct} out of {score.total} (
+// {score.percentage}%)
+// </p>
+// <div className="flex justify-center space-x-4 mb-6">
+// <div className="text-center">
+// <div className="text-2xl font-bold text-green-600">
+// {score.correct}
+// </div>
+// <div className="text-sm text-gray-600">Correct</div>
+// </div>
+// <div className="text-center">
+// <div className="text-2xl font-bold text-red-600">
+// {score.total - score.correct}
+// </div>
+// <div className="text-sm text-gray-600">Incorrect</div>
+// </div>
+// <div className="text-center">
+// <div className="text-2xl font-bold text-blue-600">
+// {formatTime(timeSpent)}
+// </div>
+// <div className="text-sm text-gray-600">Time Spent</div>
+// </div>
+// </div>
+
+// <div className="flex justify-center space-x-4">
+// <button
+// onClick={handleRestart}
+// className="flex items-center px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+// >
+// <RotateCcw className="w-4 h-4 mr-2" />
+// Restart Quiz
+// </button>
+// <button
+// onClick={() => setCurrentView("courses")}
+// className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+// >
+// Back to Courses
+// </button>
+// </div>
+// </div>
+// </main>
+// </div>
+// );
+// }
+
+// return null;
+// }
