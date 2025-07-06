@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -32,6 +32,7 @@ import CONTRACTLAWONE from "./Database/ContractLaw1";
 import LOGO from "./assets/LOGO.png";
 import correctSound from "./assets/correct.mp3";
 import incorrectSound from "./assets/incorrect.mp3";
+import PRINCIPLESOFECONS1 from "./Database/PrinciplesofEcons1";
 
 // Course registry
 const COURSES = {
@@ -45,6 +46,7 @@ const COURSES = {
   "critical-thinking": CRITICALTHINKING,
   "constitutional-law1": CONSTITUTIONALLAWONE,
   "contract-law1": CONTRACTLAWONE,
+  "principles-of-economics": PRINCIPLESOFECONS1,
 };
 
 const PROGRAMS = {
@@ -142,6 +144,7 @@ const PROGRAMS = {
       "bus-stats",
       "intro-management",
       "critical-thinking",
+      "intro-management",
     ],
     color: "bg-yellow-500",
   },
@@ -154,19 +157,32 @@ const PROGRAMS = {
   BASC: {
     name: "BSC. ACTUARIAL SCIENCE",
     id: "BASC",
-    courses: ["intro-em"],
+    courses: ["intro-em", "critical-thinking", "principles-of-economics"],
     color: "bg-pink-500",
   },
   BRMF: {
     name: "BSC. REAL ESTATE MGT & FINANCE",
     id: "BRMF",
-    courses: ["intro-em"],
+    courses: [
+      "intro-em",
+      "bus-econs",
+      "bus-french",
+      "critical-thinking",
+      "intro-management",
+      "bus-stats",
+    ],
     color: "bg-amber-500",
   },
   BBBEC: {
     name: "BSC. BUSINESS ECONOMICS",
-    id: "BBEC",
-    courses: ["intro-em", "intro-management", "critical-thinking"],
+    id: "BBBEC",
+    courses: [
+      "intro-em",
+      "intro-management",
+      "critical-thinking",
+      "bus-stats",
+      "principles-of-economics",
+    ],
     color: "bg-orange-500",
   },
   BLTM: {
@@ -186,7 +202,7 @@ const PROGRAMS = {
   BACS: {
     name: "BA. COMMUNICATION STUDIES",
     id: "BACS",
-    courses: ["intro-em"],
+    courses: ["intro-em", "critical-thinking"],
     color: "bg-gray-500",
   },
 };
@@ -206,7 +222,8 @@ function PrepMateApp() {
   const [questionMode, setQuestionMode] = useState("standard");
   const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [isDarkTheme, setIsDarkTheme] = useState(() => {
-    return localStorage.getItem("theme") === "light" ? false : true;
+    const savedTheme = localStorage.getItem("theme");
+    return savedTheme === "dark"; // Default to false (light theme) unless explicitly set to "dark"
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -221,8 +238,6 @@ function PrepMateApp() {
     success: false,
     error: null,
   });
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const notificationRef = useRef(null);
 
   // Hardcoded notifications
   const notifications = [
@@ -265,7 +280,9 @@ function PrepMateApp() {
     const loadGoogleAnalytics = () => {
       setIsLoading(true);
       const script = document.createElement("script");
-      script.src = "https://www.googletagmanager.com/gtag/js?id=G-YOUR_GA4_ID";
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${
+        import.meta.env.VITE_APP_GA4_ID
+      }`;
       script.async = true;
       script.onload = () => {
         window.dataLayer = window.dataLayer || [];
@@ -273,7 +290,7 @@ function PrepMateApp() {
           window.dataLayer.push(arguments);
         }
         gtag("js", new Date());
-        gtag("config", "G-YOUR_GA4_ID");
+        gtag("config", import.meta.env.VITE_APP_GA4_ID);
         setIsLoading(false);
       };
       script.onerror = () => {
@@ -308,20 +325,6 @@ function PrepMateApp() {
   useEffect(() => {
     localStorage.setItem("theme", isDarkTheme ? "dark" : "light");
   }, [isDarkTheme]);
-
-  // Close notification menu on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target)
-      ) {
-        setIsNotificationsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // Shuffle questions for quiz
   const shuffleArray = (array) => {
@@ -408,7 +411,6 @@ function PrepMateApp() {
     setCurrentView("courses");
     setSearchTerm("");
     setIsMenuOpen(false);
-    setIsNotificationsOpen(false);
     if (window.gtag) {
       window.gtag("event", "program_selected", {
         program_id: programId,
@@ -429,7 +431,6 @@ function PrepMateApp() {
     setQuizCompleted(false);
     setSearchTerm("");
     setIsMenuOpen(false);
-    setIsNotificationsOpen(false);
     if (window.gtag) {
       window.gtag("event", "course_selected", {
         course_id: courseId,
@@ -495,22 +496,15 @@ function PrepMateApp() {
     setPreviousView(currentView);
     setCurrentView("mcqs");
     setIsMenuOpen(false);
-    setIsNotificationsOpen(false);
   };
 
   const toggleTheme = () => {
     setIsDarkTheme(!isDarkTheme);
-    setIsNotificationsOpen(false);
+    setIsMenuOpen(false);
   };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-    setIsNotificationsOpen(false);
-  };
-
-  const toggleNotifications = () => {
-    setIsNotificationsOpen(!isNotificationsOpen);
-    setIsMenuOpen(false);
   };
 
   const handleFeedbackChange = (e) => {
@@ -653,9 +647,8 @@ function PrepMateApp() {
                   setCurrentView(backView);
                   setSearchTerm("");
                   setIsMenuOpen(false);
-                  setIsNotificationsOpen(false);
                 }}
-                className={`mr-4 p-2 hover:bg-opacity-10 rounded-lg ${
+                className={`mr-4 p-2 hover:bg-opacity-10 rounded-lg cursor-pointer ${
                   isDarkTheme ? "hover:bg-gray-700" : "hover:bg-gray-100"
                 }`}
               >
@@ -704,6 +697,18 @@ function PrepMateApp() {
                 </p>
               </div>
             )}
+            {currentView === "notifications" && (
+              <div className="ml-4">
+                <h1 className="text-lg font-semibold">Notifications</h1>
+                <p
+                  className={`text-sm ${
+                    isDarkTheme ? "text-gray-300" : "text-gray-600"
+                  }`}
+                >
+                  Stay updated with the latest news
+                </p>
+              </div>
+            )}
           </div>
           <div className="flex items-center space-x-4">
             {currentView === "mcqs" && (
@@ -732,7 +737,7 @@ function PrepMateApp() {
             <div className="hidden lg:flex items-center space-x-4">
               <button
                 onClick={toggleTheme}
-                className={`p-2 rounded-full ${
+                className={`p-2 rounded-full cursor-pointer ${
                   isDarkTheme
                     ? "bg-gray-700 text-yellow-400"
                     : "bg-gray-100 text-gray-600"
@@ -745,79 +750,35 @@ function PrepMateApp() {
                   <Moon className="w-5 h-5" />
                 )}
               </button>
-              <div className="relative" ref={notificationRef}>
-                <button
-                  onClick={toggleNotifications}
-                  className={`p-2 rounded-full relative ${
-                    isDarkTheme
-                      ? "bg-gray-700 text-blue-400"
-                      : "bg-gray-100 text-blue-600"
-                  } hover:bg-opacity-80 transition-colors`}
-                  aria-label="Notifications"
-                >
-                  <Bell className="w-5 h-5" />
-                  {notifications.length > 0 && (
-                    <span
-                      className={`absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center`}
-                    >
-                      {notifications.length}
-                    </span>
-                  )}
-                </button>
-                {isNotificationsOpen && (
-                  <div
-                    className={`absolute top-12 right-0 w-80 rounded-lg shadow-lg border z-50 ${
-                      isDarkTheme
-                        ? "bg-gray-800 text-white border-gray-600"
-                        : "bg-white text-gray-900 border-gray-200"
-                    }`}
+              <button
+                onClick={() => {
+                  setPreviousView(currentView);
+                  setCurrentView("notifications");
+                  setIsMenuOpen(false);
+                }}
+                className={`p-2 rounded-full relative cursor-pointer ${
+                  isDarkTheme
+                    ? "bg-gray-700 text-blue-400"
+                    : "bg-gray-100 text-blue-600"
+                } hover:bg-opacity-80 transition-colors`}
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {notifications.length > 0 && (
+                  <span
+                    className={`absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center`}
                   >
-                    <div className="p-4">
-                      <h3 className="text-lg font-semibold mb-2">
-                        Notifications
-                      </h3>
-                      {notifications.length === 0 ? (
-                        <p
-                          className={`text-sm ${
-                            isDarkTheme ? "text-gray-300" : "text-gray-600"
-                          }`}
-                        >
-                          No new notifications.
-                        </p>
-                      ) : (
-                        notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className={`p-3 mb-2 rounded-lg ${
-                              isDarkTheme
-                                ? "bg-gray-700 text-gray-300"
-                                : "bg-gray-50 text-gray-600"
-                            }`}
-                          >
-                            <p className="font-medium">{notification.title}</p>
-                            <p className="text-sm">{notification.message}</p>
-                            <p
-                              className={`text-xs ${
-                                isDarkTheme ? "text-gray-400" : "text-gray-500"
-                              }`}
-                            >
-                              {notification.date}
-                            </p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
+                    {notifications.length}
+                  </span>
                 )}
-              </div>
+              </button>
               <button
                 onClick={() => {
                   setPreviousView(currentView);
                   setCurrentView("feedback");
                   setIsMenuOpen(false);
-                  setIsNotificationsOpen(false);
                 }}
-                className={`p-2 rounded-full ${
+                className={`p-2 rounded-full cursor-pointer ${
                   isDarkTheme
                     ? "bg-gray-700 text-blue-400"
                     : "bg-gray-100 text-blue-600"
@@ -828,7 +789,7 @@ function PrepMateApp() {
               </button>
             </div>
             <button
-              className={`lg:hidden p-2 rounded-full hover:bg-opacity-10 transition-colors`}
+              className={`lg:hidden p-2 rounded-full hover:bg-opacity-10 transition-colors cursor-pointer`}
               onClick={toggleMenu}
               aria-label="Toggle menu"
             >
@@ -859,7 +820,7 @@ function PrepMateApp() {
             <div className="flex flex-col space-y-4">
               <button
                 onClick={toggleTheme}
-                className={`flex items-center p-2 rounded-lg ${
+                className={`flex items-center p-2 rounded-lg cursor-pointer ${
                   isDarkTheme
                     ? "bg-gray-700 text-yellow-400"
                     : "bg-gray-100 text-gray-600"
@@ -872,79 +833,35 @@ function PrepMateApp() {
                 )}
                 {isDarkTheme ? "Light Theme" : "Dark Theme"}
               </button>
-              <div className="relative" ref={notificationRef}>
-                <button
-                  onClick={toggleNotifications}
-                  className={`flex items-center p-2 rounded-lg w-full text-left relative ${
-                    isDarkTheme
-                      ? "bg-gray-700 text-blue-400"
-                      : "bg-gray-100 text-blue-600"
-                  } hover:bg-opacity-80 transition-colors`}
-                >
-                  <Bell className="w-5 h-5 mr-2" />
-                  Notifications
-                  {notifications.length > 0 && (
-                    <span
-                      className={`absolute top-2 right-2 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center`}
-                    >
-                      {notifications.length}
-                    </span>
-                  )}
-                </button>
-                {isNotificationsOpen && (
-                  <div
-                    className={`absolute top-12 left-0 right-0 w-full max-w-[90vw] mx-auto rounded-lg shadow-lg border z-50 ${
-                      isDarkTheme
-                        ? "bg-gray-800 text-white border-gray-600"
-                        : "bg-white text-gray-900 border-gray-200"
-                    }`}
+              <button
+                onClick={() => {
+                  setPreviousView(currentView);
+                  setCurrentView("notifications");
+                  setIsMenuOpen(false);
+                }}
+                className={`flex items-center p-2 rounded-lg relative cursor-pointer ${
+                  isDarkTheme
+                    ? "bg-gray-700 text-blue-400"
+                    : "bg-gray-100 text-blue-600"
+                } hover:bg-opacity-80 transition-colors`}
+              >
+                <Bell className="w-5 h-5 mr-2" />
+                Notifications
+                {notifications.length > 0 && (
+                  <span
+                    className={`absolute top-2 right-2 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center`}
                   >
-                    <div className="p-4">
-                      <h3 className="text-md font-semibold mb-2">
-                        Notifications
-                      </h3>
-                      {notifications.length === 0 ? (
-                        <p
-                          className={`text-sm ${
-                            isDarkTheme ? "text-gray-300" : "text-gray-600"
-                          }`}
-                        >
-                          No new notifications.
-                        </p>
-                      ) : (
-                        notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className={`p-3 mb-2 rounded-lg ${
-                              isDarkTheme
-                                ? "bg-gray-700 text-gray-300"
-                                : "bg-gray-50 text-gray-600"
-                            }`}
-                          >
-                            <p className="font-medium">{notification.title}</p>
-                            <p className="text-sm">{notification.message}</p>
-                            <p
-                              className={`text-xs ${
-                                isDarkTheme ? "text-gray-400" : "text-gray-500"
-                              }`}
-                            >
-                              {notification.date}
-                            </p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
+                    {notifications.length}
+                  </span>
                 )}
-              </div>
+              </button>
               <button
                 onClick={() => {
                   setPreviousView(currentView);
                   setCurrentView("feedback");
                   setIsMenuOpen(false);
-                  setIsNotificationsOpen(false);
                 }}
-                className={`flex items-center p-2 rounded-lg ${
+                className={`flex items-center p-2 rounded-lg cursor-pointer ${
                   isDarkTheme
                     ? "bg-gray-700 text-blue-400"
                     : "bg-gray-100 text-blue-600"
@@ -976,7 +893,7 @@ function PrepMateApp() {
             <div className="flex items-center justify-center mb-4">
               <img
                 src={LOGO}
-                className="w-56 h-40"
+                className="w-56 h-40 cursor-pointer"
                 alt="PrepMate Logo"
                 onClick={() => setCurrentView("dashboard")}
               />
@@ -1037,7 +954,7 @@ function PrepMateApp() {
               <div
                 key={programId}
                 onClick={() => handleProgramSelect(programId)}
-                className={`rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-l-4 border-blue-500 ${
+                className={`rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-l-4 border-blue-500 cursor-pointer ${
                   isDarkTheme
                     ? "bg-gray-800 text-white"
                     : "bg-white text-gray-900"
@@ -1127,7 +1044,7 @@ function PrepMateApp() {
                 <div
                   key={courseId}
                   onClick={() => handleCourseSelect(courseId)}
-                  className={`rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow ${
+                  className={`rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer ${
                     isDarkTheme
                       ? "bg-gray-800 text-white"
                       : "bg-white text-gray-900"
@@ -1182,6 +1099,10 @@ function PrepMateApp() {
     const selectedAnswer = selectedAnswers[currentQuestionIndex];
     const currentScore = calculateScore();
 
+    console.log(course);
+
+    console.log(currentScore);
+
     return (
       <div
         className={`min-h-screen ${
@@ -1202,7 +1123,7 @@ function PrepMateApp() {
             <div className="flex space-x-4">
               <button
                 onClick={() => setQuestionMode("rapid")}
-                className={`px-4 py-2 rounded-lg border ${
+                className={`px-4 py-2 rounded-lg border cursor-pointer ${
                   questionMode === "rapid"
                     ? isDarkTheme
                       ? "bg-blue-600 text-white border-blue-500"
@@ -1216,7 +1137,7 @@ function PrepMateApp() {
               </button>
               <button
                 onClick={() => setQuestionMode("standard")}
-                className={`px-4 py-2 rounded-lg border ${
+                className={`px-4 py-2 rounded-lg border cursor-pointer ${
                   questionMode === "standard"
                     ? isDarkTheme
                       ? "bg-blue-600 text-white border-blue-500"
@@ -1230,7 +1151,7 @@ function PrepMateApp() {
               </button>
               <button
                 onClick={() => setQuestionMode("all")}
-                className={`px-4 py-2 rounded-lg border ${
+                className={`px-4 py-2 rounded-lg border cursor-pointer ${
                   questionMode === "all"
                     ? isDarkTheme
                       ? "bg-blue-600 text-white border-blue-500"
@@ -1297,7 +1218,9 @@ function PrepMateApp() {
                         <button
                           key={option}
                           onClick={() => handleAnswerSelect(option)}
-                          className={buttonClass}
+                          className={`${buttonClass} ${
+                            showExplanation ? "" : "cursor-pointer"
+                          }`}
                           disabled={showExplanation}
                         >
                           <div className="flex items-center">
@@ -1350,7 +1273,7 @@ function PrepMateApp() {
                 <button
                   onClick={handlePrevQuestion}
                   disabled={currentQuestionIndex === 0}
-                  className={`flex items-center px-4 py-2 rounded-lg ${
+                  className={`flex items-center px-4 py-2 rounded-lg cursor-pointer ${
                     isDarkTheme
                       ? "bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-400"
@@ -1362,7 +1285,7 @@ function PrepMateApp() {
                 <button
                   onClick={handleNextQuestion}
                   disabled={!showExplanation}
-                  className={`flex items-center px-4 py-2 rounded-lg ${
+                  className={`flex items-center px-4 py-2 rounded-lg cursor-pointer ${
                     isDarkTheme
                       ? "bg-blue-600 text-white hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-400"
                       : "bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
@@ -1475,7 +1398,7 @@ function PrepMateApp() {
             <div className="flex justify-center space-x-4">
               <button
                 onClick={handleRestart}
-                className={`flex items-center px-6 py-3 rounded-lg ${
+                className={`flex items-center px-6 py-3 rounded-lg cursor-pointer ${
                   isDarkTheme
                     ? "bg-blue-600 text-white hover:bg-blue-500"
                     : "bg-blue-500 text-white hover:bg-blue-600"
@@ -1490,7 +1413,7 @@ function PrepMateApp() {
                   setCurrentView("courses");
                   setSearchTerm("");
                 }}
-                className={`px-6 py-3 rounded-lg ${
+                className={`px-6 py-3 rounded-lg cursor-pointer ${
                   isDarkTheme
                     ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -1540,10 +1463,10 @@ function PrepMateApp() {
               <p className="text-sm">
                 You can also contact us at{" "}
                 <a
-                  href="mailto:support@prepmate.com"
-                  className="underline hover:text-blue-500"
+                  href="novate.info@gmail.com"
+                  className="underline hover:text-blue-500 cursor-pointer"
                 >
-                  support@prepmate.com
+                  novate.info@gmail.com
                 </a>{" "}
                 for site progress updates and support.
               </p>
@@ -1642,7 +1565,7 @@ function PrepMateApp() {
               <button
                 type="submit"
                 disabled={feedbackStatus.loading}
-                className={`w-full py-3 rounded-lg ${
+                className={`w-full py-3 rounded-lg cursor-pointer ${
                   isDarkTheme
                     ? "bg-blue-600 text-white hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-400"
                     : "bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-100 disabled:text-gray-400"
@@ -1657,12 +1580,72 @@ function PrepMateApp() {
     );
   }
 
+  // Notifications View
+  if (currentView === "notifications") {
+    return (
+      <div
+        className={`min-h-screen ${
+          isDarkTheme ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
+        }`}
+      >
+        <Navbar showBackButton={true} backView={previousView} />
+        {isLoading && <LoadingScreen />}
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div
+            className={`rounded-lg shadow-md p-8 ${
+              isDarkTheme ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+            }`}
+          >
+            <h2 className="text-2xl font-bold mb-4">Notifications</h2>
+            <p
+              className={`mb-6 ${
+                isDarkTheme ? "text-gray-300" : "text-gray-600"
+              }`}
+            >
+              Stay updated with the latest news and updates from PrepMate.
+            </p>
+            {notifications.length === 0 ? (
+              <p
+                className={`text-sm ${
+                  isDarkTheme ? "text-gray-300" : "text-gray-600"
+                }`}
+              >
+                No new notifications.
+              </p>
+            ) : (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-4 mb-4 rounded-lg ${
+                    isDarkTheme
+                      ? "bg-gray-700 text-gray-300"
+                      : "bg-gray-50 text-gray-600"
+                  }`}
+                >
+                  <p className="font-medium">{notification.title}</p>
+                  <p className="text-sm">{notification.message}</p>
+                  <p
+                    className={`text-xs ${
+                      isDarkTheme ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    {notification.date}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return null;
 }
 
 export default PrepMateApp;
 
-// // //Add the courses for the remaining programs
-// // //Add the tool-tip to the message component and feedback form for the users
-// // //Integrate Google analytics to track site performance
-// // //Test the site and improve the analytics
+// // // // //Add the courses for the remaining programs
+// // // // //Add the tool-tip to the message component and feedback form for the users
+// // // // //Integrate Google analytics to track site performance
+// // // // //Test the site and improve the analytics
