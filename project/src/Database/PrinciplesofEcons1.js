@@ -1,7 +1,7 @@
 const PrinciplesOfEcons1 = {
   exam_details: {
     university: "Principles of Economics",
-    course_code: "ECON",
+    course_code: "Principles of Economics",
     course_name: "PRINCIPLES OF ECONOMICS",
   },
   multiple_choice_questions: [

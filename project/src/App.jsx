@@ -243,14 +243,14 @@ function PrepMateApp() {
   const notifications = [
     {
       id: 1,
-      title: "New Course Added",
-      message: "Introduction to Data Science is now available!",
-      date: "2025-07-01",
+      title: "Site Update",
+      message: "Site is still under construction",
+      date: "2025-07-07",
     },
     {
       id: 2,
-      title: "Site Update",
-      message: "Improved performance and new dark theme options.",
+      title: "Availale Courses",
+      message: "Request the course(s) you'd want to prep on",
       date: "2025-06-25",
     },
     {
@@ -280,9 +280,7 @@ function PrepMateApp() {
     const loadGoogleAnalytics = () => {
       setIsLoading(true);
       const script = document.createElement("script");
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${
-        import.meta.env.VITE_APP_GA4_ID
-      }`;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=G-91Q2LH09X7}`;
       script.async = true;
       script.onload = () => {
         window.dataLayer = window.dataLayer || [];
@@ -290,7 +288,7 @@ function PrepMateApp() {
           window.dataLayer.push(arguments);
         }
         gtag("js", new Date());
-        gtag("config", import.meta.env.VITE_APP_GA4_ID);
+        gtag("config", "G-91Q2LH09X7");
         setIsLoading(false);
       };
       script.onerror = () => {
@@ -320,6 +318,14 @@ function PrepMateApp() {
       });
     }
   }, [currentView]);
+
+  <script
+    id="Cookiebot"
+    src="https://consent.cookiebot.com/uc.js"
+    data-cbid="d6f77319-726f-47f8-9936-34430e52c949"
+    type="text/javascript"
+    async
+  ></script>;
 
   // Persist theme preference
   useEffect(() => {
@@ -355,6 +361,7 @@ function PrepMateApp() {
     setCurrentQuestionIndex(0);
     setSelectedAnswers({});
     setShowExplanation(false);
+    setTimeSpent(0); // Reset timer when starting quiz
   }, [selectedCourse, questionMode]);
 
   // Timer for quiz
@@ -461,6 +468,7 @@ function PrepMateApp() {
     if (currentQuestionIndex < filteredQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setShowExplanation(!!selectedAnswers[currentQuestionIndex + 1]);
+      setTimeSpent(0); // Reset timer on question change
     } else {
       setQuizCompleted(true);
       setPreviousView(currentView);
@@ -472,6 +480,7 @@ function PrepMateApp() {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
       setShowExplanation(!!selectedAnswers[currentQuestionIndex - 1]);
+      setTimeSpent(0); // Reset timer on question change
     }
   };
 
@@ -672,7 +681,7 @@ function PrepMateApp() {
             )}
             {currentView === "mcqs" && (
               <div className="ml-4">
-                <h1 className="text-lg font-semibold">
+                <h1 className="text-base font-semibold">
                   {COURSES[selectedCourse].exam_details.course_code}
                 </h1>
                 <p
@@ -712,7 +721,7 @@ function PrepMateApp() {
           </div>
           <div className="flex items-center space-x-4">
             {currentView === "mcqs" && (
-              <>
+              <div className="justify-center items-center space-x-4 flex-col">
                 <div
                   className={`flex items-center text-sm ${
                     isDarkTheme ? "text-gray-300" : "text-gray-600"
@@ -726,13 +735,13 @@ function PrepMateApp() {
                     isDarkTheme ? "text-gray-300" : "text-gray-600"
                   }`}
                 >
-                  <Trophy className="w-4 h-4 mr-1" />
+                  <Trophy className="w-4 h-4 mr-1 text-green-600" />
                   <span>
-                    Score: {calculateScore().correct}/{filteredQuestions.length}{" "}
-                    ({calculateScore().percentage}%)
+                    {/* Score: {calculateScore().correct}/{filteredQuestions.length}{" "} */}
+                    {calculateScore().percentage}%
                   </span>
                 </div>
-              </>
+              </div>
             )}
             <div className="hidden lg:flex items-center space-x-4">
               <button
@@ -788,28 +797,30 @@ function PrepMateApp() {
                 <MessageCircle className="w-5 h-5" />
               </button>
             </div>
-            <button
-              className={`lg:hidden p-2 rounded-full hover:bg-opacity-10 transition-colors cursor-pointer`}
-              onClick={toggleMenu}
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? (
-                <X
-                  className={`w-6 h-6 ${
-                    isDarkTheme ? "text-gray-300" : "text-gray-600"
-                  }`}
-                />
-              ) : (
-                <Menu
-                  className={`w-6 h-6 ${
-                    isDarkTheme ? "text-gray-300" : "text-gray-600"
-                  }`}
-                />
-              )}
-            </button>
+            {currentView !== "mcqs" && (
+              <button
+                className={`lg:hidden p-2 rounded-full hover:bg-opacity-10 transition-colors cursor-pointer`}
+                onClick={toggleMenu}
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? (
+                  <X
+                    className={`w-6 h-6 ${
+                      isDarkTheme ? "text-gray-300" : "text-gray-600"
+                    }`}
+                  />
+                ) : (
+                  <Menu
+                    className={`w-6 h-6 ${
+                      isDarkTheme ? "text-gray-300" : "text-gray-600"
+                    }`}
+                  />
+                )}
+              </button>
+            )}
           </div>
         </div>
-        {isMenuOpen && (
+        {isMenuOpen && currentView !== "mcqs" && (
           <div
             className={`lg:hidden ${
               isDarkTheme ? "bg-gray-800" : "bg-white"
@@ -967,7 +978,7 @@ function PrepMateApp() {
                     <BookOpen className="w-6 h-6 text-white" />
                   </div>
                   <div className="ml-4">
-                    <h3 className="text-lg font-semibold">{program.name}</h3>
+                    <h1 className="text-lg font-semibold">{program.name}</h1>
                     <p
                       className={`text-sm ${
                         isDarkTheme ? "text-gray-300" : "text-gray-600"
@@ -1100,7 +1111,6 @@ function PrepMateApp() {
     const currentScore = calculateScore();
 
     console.log(course);
-
     console.log(currentScore);
 
     return (
@@ -1122,7 +1132,10 @@ function PrepMateApp() {
             </label>
             <div className="flex space-x-4">
               <button
-                onClick={() => setQuestionMode("rapid")}
+                onClick={() => {
+                  setQuestionMode("rapid");
+                  setTimeSpent(0); // Reset timer on mode change
+                }}
                 className={`px-4 py-2 rounded-lg border cursor-pointer ${
                   questionMode === "rapid"
                     ? isDarkTheme
@@ -1136,7 +1149,10 @@ function PrepMateApp() {
                 Rapid (10)
               </button>
               <button
-                onClick={() => setQuestionMode("standard")}
+                onClick={() => {
+                  setQuestionMode("standard");
+                  setTimeSpent(0); // Reset timer on mode change
+                }}
                 className={`px-4 py-2 rounded-lg border cursor-pointer ${
                   questionMode === "standard"
                     ? isDarkTheme
@@ -1150,7 +1166,10 @@ function PrepMateApp() {
                 Standard (20)
               </button>
               <button
-                onClick={() => setQuestionMode("all")}
+                onClick={() => {
+                  setQuestionMode("all");
+                  setTimeSpent(0); // Reset timer on mode change
+                }}
                 className={`px-4 py-2 rounded-lg border cursor-pointer ${
                   questionMode === "all"
                     ? isDarkTheme
@@ -1391,7 +1410,7 @@ function PrepMateApp() {
                     isDarkTheme ? "text-gray-300" : "text-gray-600"
                   }`}
                 >
-                  Time Spent
+                  TPQ (Time Per Question)
                 </div>
               </div>
             </div>
@@ -1645,7 +1664,8 @@ function PrepMateApp() {
 
 export default PrepMateApp;
 
-// // // // //Add the courses for the remaining programs
-// // // // //Add the tool-tip to the message component and feedback form for the users
-// // // // //Integrate Google analytics to track site performance
-// // // // //Test the site and improve the analytics
+// export default PrepMateApp;
+// // // // // //Add the courses for the remaining programs
+// // // // // //Add the tool-tip to the message component and feedback form for the users
+// // // // // //Integrate Google analytics to track site performance
+// // // // // //Test the site and improve the analytics
